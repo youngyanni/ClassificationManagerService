@@ -11,7 +11,6 @@ import ru.mtuci.ib.ml_service.classification_service.DTO_Response.PredictionResp
 import ru.mtuci.ib.ml_service.classification_service.DTO_Response.TrainResponse;
 import ru.mtuci.ib.ml_service.classification_service.Service.Classification_service;
 
-import java.sql.SQLException;
 import java.util.List;
 
 
@@ -20,33 +19,39 @@ import java.util.List;
 @RequiredArgsConstructor
 public class ClassificationController {
     private final Classification_service service;
-    @GetMapping(value="/algorithms")
-    public List<String> getAvailableAlgorithms(){
+
+    @GetMapping(value = "/algorithms")
+    public List<String> getAvailableAlgorithms() {
         return service.availableAlgorithms();
     }
-        @GetMapping(value = "/createdModel")
-    public List<CreatedModelResponse> getCreatedModels(){
-        return service.createdModels();
+
+    @GetMapping(value = "/createdModel")
+    public List<CreatedModelResponse> createdModels() {
+        return service.getCreatedModels();
     }
-    @PostMapping(value = "/create")
-    public Integer createModel(@RequestBody CreateModelRequest Param) throws SQLException {
+
+   @PostMapping(value = "/create")
+    public String createModel(@RequestBody CreateModelRequest Param){
         return service.createModel(Param);
     }
+
     @PostMapping(value = "/train")
-    public ResponseEntity<Object> trainModel(@RequestBody TrainRequest Param) throws Exception {
+    public ResponseEntity<String> trainModel(@RequestBody TrainRequest Param) throws Exception {
         try {
             TrainResponse response = service.trainModel(Param);
-            return ResponseEntity.ok(response);
+            return ResponseEntity.ok(String.valueOf(response));
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
+
     @PostMapping(value = "/predict")
-    public ResponseEntity<Object> predictModel(@RequestBody PredictionRequest Param) throws Exception {
+    public ResponseEntity<String> predictModel(@RequestBody PredictionRequest Param) throws Exception {
         try {
             PredictionResponse response = service.predictModel(Param);
-            return ResponseEntity.ok(response);
+            return ResponseEntity.ok(String.valueOf(response));
         } catch (Exception e) {
+            System.out.println(e);
             return ResponseEntity.badRequest().body(e.getMessage());
         }
     }

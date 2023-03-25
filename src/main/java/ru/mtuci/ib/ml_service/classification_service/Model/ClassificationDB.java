@@ -15,25 +15,20 @@ import java.sql.Blob;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public  class Classification_DB {
+public class ClassificationDB {
     @Id
     @Column(name = "Id")
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-
     @Column(name = "Name")
     private String name;
-
-    @Column(name = "precision")
-    private double Precision;
-
-    @Column(name = "recall")
-    private double Recall;
     @Column(name = "model")
     @Lob
-    private Blob Model;
-    @Column(name = "alg")
-    private String nameAlg;
+    private Blob model;
     @Column(name = "metrics")
     private String metrics;
+    @Column(name = "status")
+    private String status;
+    @Column(name = "provider")
+    private String provider;
 }

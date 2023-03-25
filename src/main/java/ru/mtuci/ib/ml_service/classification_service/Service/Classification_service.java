@@ -2,139 +2,195 @@ package ru.mtuci.ib.ml_service.classification_service.Service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Bean;
+import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
+import ru.mtuci.ib.ml_service.classification_service.DTO_For_Providers.RequestForCreate;
+import ru.mtuci.ib.ml_service.classification_service.DTO_For_Providers.RequestForPredict;
+import ru.mtuci.ib.ml_service.classification_service.DTO_For_Providers.RequestForTrain;
+import ru.mtuci.ib.ml_service.classification_service.DTO_For_Providers.ResponseForSave;
 import ru.mtuci.ib.ml_service.classification_service.DTO_Request.CreateModelRequest;
 import ru.mtuci.ib.ml_service.classification_service.DTO_Request.PredictionRequest;
 import ru.mtuci.ib.ml_service.classification_service.DTO_Request.TrainRequest;
-import ru.mtuci.ib.ml_service.classification_service.DTO_Response.CreatedModelResponse;
-import ru.mtuci.ib.ml_service.classification_service.DTO_Response.PredictionResponse;
-import ru.mtuci.ib.ml_service.classification_service.DTO_Response.TrainResponse;
-import ru.mtuci.ib.ml_service.classification_service.Model.Classification_DB;
-import ru.mtuci.ib.ml_service.classification_service.Provider.InterfaceProvider;
-import ru.mtuci.ib.ml_service.classification_service.Provider.PythonClassificationAlgorithmsProvider;
-import ru.mtuci.ib.ml_service.classification_service.Provider.WekaClassificationAlgorithmsProvider;
+import ru.mtuci.ib.ml_service.classification_service.DTO_Response.*;
+import ru.mtuci.ib.ml_service.classification_service.Model.AlgorithmsDB;
+import ru.mtuci.ib.ml_service.classification_service.Model.ClassificationDB;
+import ru.mtuci.ib.ml_service.classification_service.Model.ProviderDB;
+import ru.mtuci.ib.ml_service.classification_service.repositories.AlgorithmsRepository;
 import ru.mtuci.ib.ml_service.classification_service.repositories.ClassificationRepository;
+import ru.mtuci.ib.ml_service.classification_service.repositories.ProviderRepository;
+import org.springframework.cloud.stream.function.StreamBridge;
 
 import javax.sql.rowset.serial.SerialBlob;
 import java.sql.Blob;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.HashMap;
+
 import java.util.List;
-import java.util.Map;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
+
 
 @Service
 @Slf4j
 @RequiredArgsConstructor
-public class Classification_service  {
-    @Autowired
+@Component
+public class Classification_service {
     private final ClassificationRepository classificationRepository;
-    InterfaceProvider Provider;/*Не должно быть  */
-    /*Мапа в которой храниться доступные провайдеры и их алгоритмы*/
-    private final Map<String,List<String>> Algorithms = new HashMap<>();
+    private final ProviderRepository providerRepository;
+    private final AlgorithmsRepository algorithmsRepository;
 
-    public List<String> availableAlgorithms(){
-        List<String> avaibleAlg = new ArrayList<>();
-        /*
-        * Динамическое добавление провайдеров, т.к. в будущем их может быть больше
-        * */
-        Provider = new PythonClassificationAlgorithmsProvider();
-        for(int i = 0; i< Provider.getAlg().size(); i++){
-            Algorithms.put(Provider.getName(),Provider.getAlg());
-        }
-        Provider = new WekaClassificationAlgorithmsProvider();
-        for(int i = 0; i< Provider.getAlg().size(); i++){
-            Algorithms.put(Provider.getName(),Provider.getAlg());
-        }
-        //Добавление префикса в название классификатора
-        for (List<String> values: Algorithms.values()){
-            for(String value: values){
-                avaibleAlg.add(providerName(value)+"."+value);
+    private final StreamBridge streamBridge;
+    private String modelName;
+    private String currentProvider;
+
+    /*Provider Registration*/
+    @Bean
+    public Consumer<ProviderRegistration> regProvider() {
+        return info -> {
+            ProviderDB providerInfo = ProviderDB.builder()
+                    .name(info.getName())
+                    .topic(info.getTopic())
+                    .build();
+            providerRepository.save(providerInfo);
+            for(String algName:info.getAlgorithms()){
+                algorithmsRepository.save(AlgorithmsDB.builder()
+                        .algName(algName)
+                        .providerDB(providerInfo)
+                        .build());
             }
-        }
-        return avaibleAlg;
-    }
-    //Список созданных моделей
-    public List<CreatedModelResponse> createdModels(){
-        return classificationRepository.getAllModels();
+        };
     }
 
-    //Create new model
-    public Integer createModel(CreateModelRequest param) throws SQLException {
-        availableAlgorithms();
-        String currentProvider = providerName(param.getNameAlg());
-        /*В каком формате приходит созданная модель от сервиса?
-        * Blob model = request to Provider(createModel(param);
-        * */
-        /*request to currentProvider*/
-        if (currentProvider.contains("Weka")){
-            Provider = new WekaClassificationAlgorithmsProvider();
-        } else if (currentProvider.contains("Python")) {
-            Provider = new PythonClassificationAlgorithmsProvider();
-        }
-        else return null;
-        Blob blob = new SerialBlob(Provider.newModel(param.getHyperParam()));
-        classificationRepository.save(Classification_DB.builder()
-                .name(param.getNameAlg())
-                .Model(blob)
-                .nameAlg(param.getNameAlg().replace(currentProvider+".",""))
-                .build());
-        return classificationRepository.getIdByModel(new String(blob.getBytes(1L,(int) blob.length())));
-    }
-    //train model
-    public TrainResponse trainModel(TrainRequest param)throws Exception{
-        final var modelImpl = classificationRepository.findByName(param.getNameModel());
-        if (modelImpl==null){
-            throw new Exception("Model not found");
-        }
-        /*Название нужного провайдера*/
-        String currentProvider = providerName(modelImpl.getNameAlg());
-        /*
-        Blob newState = "request to Provider trainModel(modelImpl.getModel())";
-        Blob newstate = "ass".trainModel(modelImpl.getModel());
-        */
-        if (currentProvider.contains("Weka")){
-            Provider = new WekaClassificationAlgorithmsProvider();
-        } else if (currentProvider.contains("Python")) {
-            Provider = new PythonClassificationAlgorithmsProvider();
-        }
-        Blob newState = Provider.trainModel(modelImpl.getModel());
-        modelImpl.setModel(newState);
-        //Вызов у провайдера алгоритма predict
-        //Provider.predictModel();
-        //Построение матрицы ошибок
-        classificationRepository.save(modelImpl);
-        return new TrainResponse();
-    }
-    //Predict model
-    public PredictionResponse predictModel(PredictionRequest param) throws Exception {
-        /*Запись из бд по имени модели*/
-        final var modelImpl = classificationRepository.findByName(param.getNameModel());
-        if (modelImpl==null){
-            throw new Exception("Model not found");
-        }
-        /*Название нужного провайдера*/
-        String currentProvider = providerName(modelImpl.getNameAlg());
-        /**/
-        if(currentProvider.contains("Weka")){
-            Provider = new WekaClassificationAlgorithmsProvider();
-            return Provider.predictModel(modelImpl.getModel(),param.getMatrixAttr());
-        } else if (currentProvider.contains("Python")) {
-            Provider = new PythonClassificationAlgorithmsProvider();
-            return Provider.predictModel(modelImpl.getModel(),param.getMatrixAttr());
+    //Список доступных алгоритмов
+    public List<String> availableAlgorithms() {
+        var testList = new ArrayList<>(providerRepository.findAll());
+        var avaibleAlgs = new ArrayList<>();
+        for (ProviderDB entry : testList) {
+            List<String> algList = List.of(entry.getAlg()
+                    .toString(1, entry.getAlg().length() - 1)
+                    .replace(" ", "")
+                    .split(","));
+            for (String alg : algList) {
+                avaibleAlgs.add(entry.getName() + "." + alg);
+            }
         }
         return null;
     }
-    /*Метод для определения нужного правайдера по названию алгоритма*/
-    private String providerName(String NameAlg){
-        String nameOfProvider;
-        nameOfProvider = Algorithms
-                .entrySet()
+
+    //Список созданных моделей
+    public List<CreatedModelResponse> getCreatedModels() {
+        return classificationRepository.findAll()
                 .stream()
-                .filter(entry -> entry.getValue().contains(NameAlg.substring(NameAlg.indexOf(".")+1,NameAlg.length())))
-                .map(Map.Entry::getKey).collect(Collectors.joining(""));
-        return nameOfProvider;
+                .map(entry -> CreatedModelResponse.builder()
+                        .name(entry.getName())
+                        .getMetrics(List.of(entry.getMetrics()))
+                        .build())
+                .collect(Collectors.toList());
+    }
+
+    //Create new model
+    public String createModel(CreateModelRequest param) {
+        String algName = param.getNameAlg()
+                .substring(param.getNameAlg().indexOf(".") + 1, param.getNameAlg().length());
+        modelName = param.getNameModel();
+        String topic = "";
+        List<ProviderDB> providerList = new ArrayList<>(providerRepository.findAll());
+        for (ProviderDB entry : providerList) {
+            List<String> algList = List.of(entry.getAlg()
+                    .substring(1, entry.getAlg().length() - 1)
+                    .replace(" ", "")
+                    .split(","));
+            for (String alg : algList) {
+                if (alg.contains(algName)) {
+                    currentProvider = entry.getName();
+                    topic = entry.getTopic();
+                    break;
+                }
+            }
+        }
+        streamBridge.send(topic, RequestForCreate.builder()
+                .hyperParameters(param.getHyperParam())
+                .tag("create").build());
+        return param.getNameModel();
+    }
+
+    @Bean
+    public Consumer<ResponseForSave> saveModelInDB() {
+        return model -> {
+            Blob state;
+            try {
+                state = new SerialBlob(model.getModel());
+            } catch (SQLException e) {
+                throw new RuntimeException(e);
+            }
+            classificationRepository.save(ClassificationDB.builder()
+                    .name(modelName)
+                    .model(state)
+                    .status(model.getTag())
+                    .provider(currentProvider)
+                    .build());
+        };
+    }
+
+    //Train model
+    public TrainResponse trainModel(TrainRequest param) throws Exception {
+        final var modelImpl = classificationRepository.findByName(param.getNameModel());
+        if (modelImpl == null) {
+            throw new Exception("Model not found");
+        }
+        modelName = modelImpl.getName();
+        String topic = providerRepository.getTopic(modelImpl.getProvider());
+        RequestForTrain test = RequestForTrain.builder()
+                .matrixAttrTrain(param.getMatrixAttrTrain())
+                .matrixAttrTest(param.getMatrixAttrTest())
+                .model(modelImpl.getModel().getBytes(1L, (int) modelImpl.getModel().length()))
+                .labels(param.getLabels())
+                .tag("train").build();
+        streamBridge.send(topic, test);
+        return new TrainResponse();
+    }
+    //Как из Consumer вернуть значение в метод  create для тела ответа
+    @Bean
+    public Consumer<ResponseForSave> saveNewState() {
+        return newStateModel -> {
+            final var currentModel = classificationRepository.findByName(modelName);
+            System.out.println(currentModel);
+            Blob state;
+            try {
+                state = new SerialBlob(newStateModel.getModel());
+            } catch (SQLException e) {
+                throw new RuntimeException(e);
+            }
+            currentModel.setModel(state);
+            currentModel.setStatus(newStateModel.getTag());
+            classificationRepository.save(currentModel);
+        };
+    }
+
+    //Predict model
+    //HEX вместо BLOB
+    public PredictionResponse predictModel(PredictionRequest param) throws Exception {
+        var modelImpl = classificationRepository.findByName(param.getNameModel());
+        if (modelImpl == null) {
+            throw new Exception("Model not found");
+        }
+        modelName = modelImpl.getName();
+        String topic = providerRepository.getTopic(modelImpl.getProvider());
+        streamBridge.send(topic, RequestForPredict.builder()
+                .model(modelImpl.getModel().getBytes(1L, (int) modelImpl.getModel().length()))
+                .matrixAttr(param.getMatrixAttr())
+                .tag("predict")
+                .build());
+        return null;
+    }
+
+    @Bean
+    public Consumer<PredictionResponse> savePredictModel() {
+        return predModel -> {
+            final var currentModel = classificationRepository.findByName(modelName);
+            currentModel.setStatus(predModel.getTag());
+            classificationRepository.save(currentModel);
+        };
     }
 }

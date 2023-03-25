@@ -9,11 +9,21 @@ spring:
   jpa:
     hibernate:
       ddl-auto: update
+  cloud:
+    stream:
+      function:
+        definition: regProvider;newModel;saveModelInDB;predictModel;savePredictModel;trainingModel;saveNewState;
+        bindings:
+          regProvider-in-0: sharedQueue
+          predictModel-in-0: general2
+          predictModel-out-0: general5
+          savePredictModel-in-0: general5
+          trainingModel-in-0: general2
+          trainingModel-out-0: general4
+          saveNewState-in-0: general4
+          newModel-in-0: general2
+          newModel-out-0: general3
+          saveModelInDB-in-0: general3
 server:
-  port: 8761
-eureka:
-  client:
-    serviceUrl:
-      defaultZone: http://localhost:8761/eureka/
-  instance:
-    preferIpAddress: true
+  port: 8080
+

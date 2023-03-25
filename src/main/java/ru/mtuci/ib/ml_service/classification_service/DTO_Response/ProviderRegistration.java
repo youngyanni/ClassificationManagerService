@@ -9,9 +9,8 @@ import java.util.List;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class PredictionResponse {
-    private double[] probabilities;
-    private List<String> labels;
-    private String tag;
-
+public class ProviderRegistration {
+    private String name;
+    private List<String> algorithms;
+    private String topic;
 }

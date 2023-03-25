@@ -1,40 +1,45 @@
 package ru.mtuci.ib.ml_service.classification_service.Provider;
 
+import org.springframework.context.annotation.Bean;
+import org.springframework.stereotype.Component;
+import ru.mtuci.ib.ml_service.classification_service.DTO_For_Providers.RequestForCreate;
+import ru.mtuci.ib.ml_service.classification_service.DTO_For_Providers.RequestForPredict;
+import ru.mtuci.ib.ml_service.classification_service.DTO_For_Providers.RequestForTrain;
+import ru.mtuci.ib.ml_service.classification_service.DTO_For_Providers.ResponseForSave;
 import ru.mtuci.ib.ml_service.classification_service.DTO_Response.HyperParameter;
 import ru.mtuci.ib.ml_service.classification_service.DTO_Response.PredictionResponse;
 
 import java.sql.Blob;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.function.Function;
 
-public class PythonClassificationAlgorithmsProvider implements InterfaceProvider{
-    static List<String> pythonALg = Arrays.asList("Alg1","Alg2","Alg3");
+@Component
+public class PythonClassificationAlgorithmsProvider {
 
-    @Override
-    public List<String> getAlg() {
-        return pythonALg;
+   @Bean
+    public Function<RequestForCreate,ResponseForSave> newModel() {
+        return model -> {
+            String inputString = "package coxgdfgdfgfgf";
+            return new ResponseForSave(inputString.getBytes(),"created");
+        };
     }
-
-    @Override
-    public String getName() {
-        return "Python";
+    @Bean
+    public Function<RequestForTrain,ResponseForSave> trainingModel() {
+        return model -> {
+            String inputString = "package sdffd";
+            return new ResponseForSave(inputString.getBytes(),"trained");
+        };
     }
-
-    @Override
-    public byte[] newModel(List<HyperParameter> hyperParam) {
-        String inputString = "package coxgdfgdfgfgf";
-        return inputString.getBytes();
-    }
-
-    @Override
-    public Blob trainModel(Blob model) {
-        return null;
-    }
-
-    @Override
-    public PredictionResponse predictModel(Blob model, List<Object> matrixAttr) {
-        double[] prediction = new double[]{1.23,2.23};
-        List<String> labels = Arrays.asList("Google","Hearthstone");
-        return new PredictionResponse(prediction,labels);
+    @Bean
+    public Function<RequestForPredict,PredictionResponse> predictModel() {
+        return model -> {
+            double[] pred = new double[]{123,213,434,5324};
+            List<String> labels = new ArrayList<>();
+            labels.add("Yandex");
+            labels.add("Hs");
+            return new PredictionResponse(pred,labels,"predicted");
+        };
     }
 }

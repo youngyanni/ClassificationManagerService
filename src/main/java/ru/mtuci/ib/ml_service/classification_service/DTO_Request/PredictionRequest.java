@@ -13,5 +13,5 @@ import java.util.List;
 @Getter
 public class PredictionRequest {
     private String nameModel;
-    private List<Object> matrixAttr;
+    private List<String> matrixAttr;
 }
