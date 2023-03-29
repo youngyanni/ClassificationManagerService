@@ -6,21 +6,21 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+
 @Entity
-@Data
 @Table(name = "algorithms_table")
 @Builder
+@Data
 @AllArgsConstructor
 @NoArgsConstructor
 public class AlgorithmsDB {
     @Id
-    @Column(name = "algId")
+    @Column(name = "alg_Id")
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
-    @Column(name = "algorithmsName")
+    private Long algId;
+    @Column(name = "algorithms_name")
     private String algName;
     @ManyToOne
-    @JoinColumn(name="providerId")
-    ProviderDB providerDB;
-
+    @MapsId("providerdb_id")
+    private ProviderDB providerDB;
 }

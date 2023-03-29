@@ -26,7 +26,9 @@ import java.sql.Blob;
 import java.sql.SQLException;
 import java.util.ArrayList;
 
+import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
@@ -48,34 +50,26 @@ public class Classification_service {
     @Bean
     public Consumer<ProviderRegistration> regProvider() {
         return info -> {
-            ProviderDB providerInfo = ProviderDB.builder()
+            ProviderDB provider = ProviderDB.builder()
                     .name(info.getName())
                     .topic(info.getTopic())
+                    .alg(info.getAlgorithms().stream()
+                            .map(algs -> AlgorithmsDB.builder()
+                                    .algName(algs)
+                                    .build())
+                            .collect(Collectors.toList()))
                     .build();
-            providerRepository.save(providerInfo);
-            for(String algName:info.getAlgorithms()){
-                algorithmsRepository.save(AlgorithmsDB.builder()
-                        .algName(algName)
-                        .providerDB(providerInfo)
-                        .build());
-            }
+            providerRepository.save(provider);
         };
     }
 
     //Список доступных алгоритмов
+    //Доделать
     public List<String> availableAlgorithms() {
         var testList = new ArrayList<>(providerRepository.findAll());
         var avaibleAlgs = new ArrayList<>();
-        for (ProviderDB entry : testList) {
-            List<String> algList = List.of(entry.getAlg()
-                    .toString(1, entry.getAlg().length() - 1)
-                    .replace(" ", "")
-                    .split(","));
-            for (String alg : algList) {
-                avaibleAlgs.add(entry.getName() + "." + alg);
-            }
-        }
-        return null;
+        var AlgList = new ArrayList<>(providerRepository.findByID());
+        return AlgList;
     }
 
     //Список созданных моделей
@@ -150,6 +144,7 @@ public class Classification_service {
         streamBridge.send(topic, test);
         return new TrainResponse();
     }
+
     //Как из Consumer вернуть значение в метод  create для тела ответа
     @Bean
     public Consumer<ResponseForSave> saveNewState() {

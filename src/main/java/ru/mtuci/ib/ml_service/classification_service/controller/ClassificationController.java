@@ -30,10 +30,10 @@ public class ClassificationController {
         return service.getCreatedModels();
     }
 
-   @PostMapping(value = "/create")
+   /*@PostMapping(value = "/create")
     public String createModel(@RequestBody CreateModelRequest Param){
         return service.createModel(Param);
-    }
+    }*/
 
     @PostMapping(value = "/train")
     public ResponseEntity<String> trainModel(@RequestBody TrainRequest Param) throws Exception {

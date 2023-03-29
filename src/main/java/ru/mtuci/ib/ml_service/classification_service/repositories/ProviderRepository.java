@@ -11,4 +11,5 @@ public interface ProviderRepository extends JpaRepository<ProviderDB, Long> {
     String getTopic(String providerName);
 
     ProviderDB findByName(String Name);
+
 }
