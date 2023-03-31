@@ -1,15 +1,11 @@
-package ru.mtuci.ib.ml_service.classification_service.Model;
+package ru.mtuci.ib.ml_service.classification_service.model;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 
 @Table(name = "provider_table")
@@ -27,8 +23,9 @@ public class ProviderDB {
     private String name;
     @Column(name = "topic")
     private String topic;
-    @OneToMany(cascade = CascadeType.ALL)
+    @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     @JoinColumn(name = "providerdb_id")
-    private List<AlgorithmsDB> alg=new ArrayList<AlgorithmsDB>();
+    @JsonManagedReference
+    private List<AlgorithmsDB> alg = new ArrayList<AlgorithmsDB>();
 
 }

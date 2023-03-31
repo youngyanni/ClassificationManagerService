@@ -1,4 +1,4 @@
-package ru.mtuci.ib.ml_service.classification_service.Model;
+package ru.mtuci.ib.ml_service.classification_service.model;
 
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -11,14 +11,14 @@ import java.sql.Blob;
 
 @Entity
 @Data
-@Table(name = "classification_bd")
+@Table(name = "models_table")
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class ClassificationDB {
+public class ModelsDB {
     @Id
     @Column(name = "Id")
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue()
     private Long id;
     @Column(name = "Name")
     private String name;
@@ -29,6 +29,8 @@ public class ClassificationDB {
     private String metrics;
     @Column(name = "status")
     private String status;
-    @Column(name = "provider")
-    private String provider;
+    @Column(name = "predict")
+    private String predict;
+    @Column(name = "algorithm")
+    private String algorithm;
 }

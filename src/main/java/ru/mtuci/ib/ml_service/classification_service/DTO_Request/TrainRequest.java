@@ -11,8 +11,7 @@ import java.util.List;
 @AllArgsConstructor
 public class TrainRequest {
     private String nameModel;
-    private List<Object> matrixAttrTrain;
-    private List<Object> matrixAttrTest;
-    private List<String> labels;
+    private List<List<Object>> features;
+    private List<Object> labels;
 
 }

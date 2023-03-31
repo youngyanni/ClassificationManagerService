@@ -7,7 +7,6 @@ import lombok.*;
 @AllArgsConstructor
 @Getter
 @Builder
-public class ResponseForSave {
-    private byte[] model;
-    private String tag;
+public class SerializedCreatedModel {
+    private String createdModel;
 }

@@ -5,15 +5,13 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.util.List;
-
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
 public class CreatedModelResponse {
     private String name;
-
-    private List<String> getMetrics;
+    private String modelLabel;
+    private String metrics;
 
 }

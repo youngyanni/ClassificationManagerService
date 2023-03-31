@@ -6,10 +6,10 @@ import org.springframework.web.bind.annotation.*;
 import ru.mtuci.ib.ml_service.classification_service.DTO_Request.CreateModelRequest;
 import ru.mtuci.ib.ml_service.classification_service.DTO_Request.PredictionRequest;
 import ru.mtuci.ib.ml_service.classification_service.DTO_Request.TrainRequest;
+import ru.mtuci.ib.ml_service.classification_service.DTO_Response.AvailableAlgorithmsResponse;
 import ru.mtuci.ib.ml_service.classification_service.DTO_Response.CreatedModelResponse;
 import ru.mtuci.ib.ml_service.classification_service.DTO_Response.PredictionResponse;
-import ru.mtuci.ib.ml_service.classification_service.DTO_Response.TrainResponse;
-import ru.mtuci.ib.ml_service.classification_service.Service.Classification_service;
+import ru.mtuci.ib.ml_service.classification_service.service.Classification_service;
 
 import java.util.List;
 
@@ -21,7 +21,7 @@ public class ClassificationController {
     private final Classification_service service;
 
     @GetMapping(value = "/algorithms")
-    public List<String> getAvailableAlgorithms() {
+    public List<AvailableAlgorithmsResponse> getAvailableAlgorithms() {
         return service.availableAlgorithms();
     }
 
@@ -30,15 +30,15 @@ public class ClassificationController {
         return service.getCreatedModels();
     }
 
-   /*@PostMapping(value = "/create")
-    public String createModel(@RequestBody CreateModelRequest Param){
+    @PostMapping(value = "/create")
+    public String createModel(@RequestBody CreateModelRequest Param) {
         return service.createModel(Param);
-    }*/
+    }
 
     @PostMapping(value = "/train")
     public ResponseEntity<String> trainModel(@RequestBody TrainRequest Param) throws Exception {
         try {
-            TrainResponse response = service.trainModel(Param);
+            String response = service.trainModel(Param);
             return ResponseEntity.ok(String.valueOf(response));
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(e.getMessage());
@@ -55,5 +55,4 @@ public class ClassificationController {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
-
 }
