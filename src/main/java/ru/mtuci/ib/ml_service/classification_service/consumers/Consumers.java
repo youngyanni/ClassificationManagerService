@@ -4,12 +4,12 @@ package ru.mtuci.ib.ml_service.classification_service.consumers;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.stereotype.Component;
+import ru.mtuci.ib.ml_service.classification_service.DTO_For_Providers.ErrorInfo;
 import ru.mtuci.ib.ml_service.classification_service.DTO_For_Providers.GeneralRequestResponse;
 import ru.mtuci.ib.ml_service.classification_service.DTO_Response.ProviderRegistration;
 import ru.mtuci.ib.ml_service.classification_service.model.AlgorithmsDB;
 import ru.mtuci.ib.ml_service.classification_service.model.HyperparametersDB;
 import ru.mtuci.ib.ml_service.classification_service.model.ProviderDB;
-import ru.mtuci.ib.ml_service.classification_service.enums.EnumLabels;
 import ru.mtuci.ib.ml_service.classification_service.repositories.ModelsRepository;
 import ru.mtuci.ib.ml_service.classification_service.repositories.ProviderRepository;
 
@@ -30,7 +30,7 @@ public class Consumers {
     @Bean
     public Consumer<ProviderRegistration> regProvider() {
         return info -> {
-            ProviderDB provider = ProviderDB.builder()
+            var provider = ProviderDB.builder()
                     .name(info.getName())
                     .topic(info.getTopic())
                     .alg(info.getAlgorithms()
@@ -62,7 +62,7 @@ public class Consumers {
             }
             var modelImpl = modelsRepository.findModelByName(model.getModelId());
             modelImpl.setModel(state);
-            modelImpl.setStatus(model.getModelLabel().getDescript());
+            modelImpl.setStatus(model.getModelLabel().getDescription());
             modelsRepository.save(modelImpl);
         };
     }
@@ -70,7 +70,7 @@ public class Consumers {
     @Bean
     public Consumer<GeneralRequestResponse> saveNewStateInDB() {
         return newStateModel -> {
-            final var currentModel = modelsRepository.findByName(newStateModel.getModelId());
+            final var currentModel = modelsRepository.findModelByName(newStateModel.getModelId());
             Blob state;
             try {
                 state = new SerialBlob(newStateModel.getModel().getCreatedModel().getBytes());
@@ -79,7 +79,7 @@ public class Consumers {
             }
             currentModel.setModel(state);
             currentModel.setMetrics(newStateModel.getMetrics());
-            currentModel.setStatus(newStateModel.getModelLabel().getDescript());
+            currentModel.setStatus(newStateModel.getModelLabel().getDescription());
             modelsRepository.save(currentModel);
         };
     }
@@ -87,10 +87,16 @@ public class Consumers {
     @Bean
     public Consumer<GeneralRequestResponse> savePredictModel() {
         return predModel -> {
-            final var currentModel = modelsRepository.findByName(predModel.getModelId());
-            currentModel.setStatus(predModel.getModelLabel().getDescript());
+            final var currentModel = modelsRepository.findModelByName(predModel.getModelId());
+            currentModel.setStatus(predModel.getModelLabel().getDescription());
             currentModel.setPredict(Arrays.toString(predModel.getPrediction()));
             modelsRepository.save(currentModel);
         };
     }
+    /*@Bean
+    public Consumer<ErrorInfo> errorHandler(){
+        return error -> {
+
+        }
+    }*/
 }

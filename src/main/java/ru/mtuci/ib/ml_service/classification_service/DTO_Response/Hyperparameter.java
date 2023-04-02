@@ -1,6 +1,8 @@
 package ru.mtuci.ib.ml_service.classification_service.DTO_Response;
 
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
 
 @Data
 @Builder

@@ -65,10 +65,10 @@ public class Classification_service {
     }
 
     public String createModel(CreateModelRequest param) {
-        String topic = providerRepository.findTopic(algorithmsRepository.findIdByAlgName(param.getNameAlg()));
+        var topic = providerRepository.findTopic(algorithmsRepository.findIdByAlgName(param.getNameAlg()));
         modelsRepository.save(ModelsDB.builder()
                 .name(param.getNameModel())
-                .status(EnumLabels.SENTFORCREATE.getDescript())
+                .status(EnumLabels.SENT_FOR_CREATE.getDescription())
                 .algorithm(param.getNameAlg())
                 .build());
         streamBridge.send(topic, GeneralRequestResponse.builder()
@@ -81,8 +81,9 @@ public class Classification_service {
     }
 
     public String trainModel(TrainRequest param) throws Exception {
-        final var modelImpl = modelsRepository.findByName(param.getNameModel());
+        final var modelImpl = modelsRepository.findModelByName(param.getNameModel());
         if (modelImpl == null) {
+            log.error("Error: {}",modelImpl );
             throw new Exception("Model not found");
         }
         var topic = providerRepository.findTopic(algorithmsRepository.findIdByAlgName(modelImpl.getAlgorithm()));
@@ -96,13 +97,13 @@ public class Classification_service {
                 .labels(param.getLabels())
                 .modelLabel(EnumLabels.TRAIN)
                 .build());
-        modelImpl.setStatus(EnumLabels.SENTFORTRAIN.getDescript());
+        modelImpl.setStatus(EnumLabels.SENT_FOR_TRAIN.getDescription());
         modelsRepository.save(modelImpl);
-        return EnumLabels.SENTFORCREATE.getDescript();
+        return EnumLabels.SENT_FOR_CREATE.getDescription();
     }
 
     public PredictionResponse predictModel(PredictionRequest param) throws Exception {
-        var modelImpl = modelsRepository.findByName(param.getNameModel());
+        var modelImpl = modelsRepository.findModelByName(param.getNameModel());
         if (modelImpl == null) {
             throw new Exception("Model not found");
         }
