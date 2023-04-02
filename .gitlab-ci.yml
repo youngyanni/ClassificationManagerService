@@ -1,0 +1,82 @@
+stages:
+  - build
+  - test
+  - package
+  - deploy
+
+cache:
+  paths:
+    - .m2/repository
+  key: "$CI_COMMIT_REF_SLUG"
+
+variables:
+  MAVEN_OPTS: "-Dmaven.repo.local=.m2/repository"
+  MAVEN_OPTS_CLI: "--batch-mode --fail-at-end --show-version"
+
+build-mr:
+  image: openjdk:17.0.2-jdk-oracle
+  stage: build
+  script:
+    - ./mvnw clean compile $MAVEN_OPTS_CLI -DskipTests
+  rules:
+    - if: '$CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "master"'
+
+unit-test-mr:
+  image: openjdk:17.0.2-jdk-oracle
+  stage: test
+  script: 
+    - ./mvnw test $MAVEN_OPTS_CLI
+  rules:
+    - if: '$CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "master"'
+
+check-style-mr:
+  image: openjdk:17.0.2-jdk-oracle
+  stage: test
+  script: 
+    - ./mvnw checkstyle:checkstyle $MAVEN_OPTS_CLI -Dcheckstyle.output.format=xml
+    - cat target/checkstyle-result.xml
+  artifacts:
+    paths:
+      - ./target/checkstyle-result.xml
+  rules:
+    - if: '$CI_MERGE_REQUEST_TARGET_BRANCH_NAME == "master"'
+
+build:
+  image: openjdk:17.0.2-jdk-oracle
+  stage: build
+  script:
+    - ./mvnw clean package $MAVEN_OPTS_CLI
+  artifacts:
+    paths:
+      - ./target/*.jar
+  only:
+    - master
+
+package-job:
+  image: docker:latest
+  stage: package
+  before_script:
+    - echo "$CI_REGISTRY_PASSWORD" | docker login -u "$CI_REGISTRY_USER" --password-stdin $CI_REGISTRY
+
+  script:
+    - docker build -t $CI_REGISTRY/$CI_PROJECT_PATH:$CI_COMMIT_SHA .
+    - docker push $CI_REGISTRY/$CI_PROJECT_PATH:$CI_COMMIT_SHA
+  only:
+    - master
+
+deploy-job:
+  stage: deploy
+
+  variables:
+    DEPLOYING_PROJECT_REGISTRY: "$CI_REGISTRY"
+    DEPLOYING_PROJECT_REGISTRY_USER: $PROJECT_REGISTRY_USER
+    DEPLOYING_PROJECT_REGISTRY_PASSWORD: $PROJECT_REGISTRY_PASSWORD
+    DEPLOYING_PROJECT_PATH: "$CI_PROJECT_PATH"
+    DEPLOYING_PROJECT_COMMIT_SHA: "$CI_COMMIT_SHA"
+    DEPLOYING_PROJECT_NAME: "$CI_PROJECT_NAME"
+
+  trigger:
+    project: mtuci-ml-service/microservices/deployment
+
+  only:
+    - master
