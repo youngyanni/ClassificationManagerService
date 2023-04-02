@@ -1,6 +1,11 @@
 package ru.mtuci.ib.ml_service.classification_service.DTO_For_Providers;
 
-import lombok.*;
+
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 import ru.mtuci.ib.ml_service.classification_service.DTO_Response.Hyperparameter;
 import ru.mtuci.ib.ml_service.classification_service.enums.EnumLabels;
 

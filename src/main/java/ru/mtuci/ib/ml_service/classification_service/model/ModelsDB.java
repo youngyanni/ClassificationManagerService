@@ -9,6 +9,7 @@ import lombok.NoArgsConstructor;
 import java.sql.Blob;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 
 @Entity
@@ -19,9 +20,9 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 public class ModelsDB {
     @Id
-    @Column(name = "Id")
-    @GeneratedValue()
-    private Long id;
+    @Column(name = "Id",columnDefinition = "VARCHAR(255)", insertable = false, updatable = false, nullable = false)
+    @GeneratedValue(strategy = GenerationType.AUTO)
+    private UUID id;
     @Column(name = "Name")
     private String name;
     @Column(name = "model")

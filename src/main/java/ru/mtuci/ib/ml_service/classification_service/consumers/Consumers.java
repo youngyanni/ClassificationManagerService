@@ -4,7 +4,6 @@ package ru.mtuci.ib.ml_service.classification_service.consumers;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.stereotype.Component;
-import ru.mtuci.ib.ml_service.classification_service.DTO_For_Providers.ErrorInfo;
 import ru.mtuci.ib.ml_service.classification_service.DTO_For_Providers.GeneralRequestResponse;
 import ru.mtuci.ib.ml_service.classification_service.DTO_Response.ProviderRegistration;
 import ru.mtuci.ib.ml_service.classification_service.model.AlgorithmsDB;
@@ -94,8 +93,9 @@ public class Consumers {
         };
     }
     /*@Bean
-    public Consumer<ErrorInfo> errorHandler(){
+    public Consumer<ErrorMessage> errorHandler(){
         return error -> {
+
 
         }
     }*/
