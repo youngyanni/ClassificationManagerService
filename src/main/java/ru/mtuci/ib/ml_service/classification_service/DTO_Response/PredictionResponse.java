@@ -12,5 +12,6 @@ import java.util.List;
 @AllArgsConstructor
 @Builder
 public class PredictionResponse {
+    private String nameModel;
     private String predict;
 }

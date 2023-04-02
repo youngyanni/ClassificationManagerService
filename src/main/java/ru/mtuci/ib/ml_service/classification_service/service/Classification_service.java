@@ -96,6 +96,8 @@ public class Classification_service {
                 .labels(param.getLabels())
                 .modelLabel(EnumLabels.TRAIN)
                 .build());
+        modelImpl.setStatus(EnumLabels.SENTFORTRAIN.getDescript());
+        modelsRepository.save(modelImpl);
         return EnumLabels.SENTFORCREATE.getDescript();
     }
 
@@ -115,6 +117,7 @@ public class Classification_service {
                 .modelLabel(EnumLabels.PREDICT)
                 .build());
         return PredictionResponse.builder()
+                .nameModel(param.getNameModel())
                 .predict(modelImpl.getPredict())
                 .build();
     }

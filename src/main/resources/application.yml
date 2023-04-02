@@ -12,15 +12,15 @@ spring:
   cloud:
     stream:
       function:
-        definition: regProvider;predictModel;savePredictModel;trainingModel;saveNewStateInDB;newModel;saveModelInDB;
+        definition: regProvider;predictModel;savePredictModel;newModel;saveModelInDB;trainingModel;saveNewStateInDB;
         bindings:
           regProvider-in-0: sharedQueue
-          #trainingModel-in-0: general2
-          #trainingModel-out-0: general4
-          #saveNewStateInDB-in-0: general4
           #newModel-in-0: general2
           #newModel-out-0: general3
           #saveModelInDB-in-0: general3
+          #trainingModel-in-0: general2
+          #trainingModel-out-0: general4
+          #saveNewStateInDB-in-0: general4
           predictModel-in-0: general2
           predictModel-out-0: general5
           savePredictModel-in-0: general5

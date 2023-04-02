@@ -7,6 +7,8 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.sql.Blob;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 
 @Entity

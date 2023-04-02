@@ -79,7 +79,7 @@ public class Consumers {
             }
             currentModel.setModel(state);
             currentModel.setMetrics(newStateModel.getMetrics());
-            currentModel.setStatus(EnumLabels.TRAINED.getDescript());
+            currentModel.setStatus(newStateModel.getModelLabel().getDescript());
             modelsRepository.save(currentModel);
         };
     }
@@ -87,7 +87,6 @@ public class Consumers {
     @Bean
     public Consumer<GeneralRequestResponse> savePredictModel() {
         return predModel -> {
-            System.out.println(predModel);
             final var currentModel = modelsRepository.findByName(predModel.getModelId());
             currentModel.setStatus(predModel.getModelLabel().getDescript());
             currentModel.setPredict(Arrays.toString(predModel.getPrediction()));

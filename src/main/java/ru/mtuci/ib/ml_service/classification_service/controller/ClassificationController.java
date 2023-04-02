@@ -1,7 +1,6 @@
 package ru.mtuci.ib.ml_service.classification_service.controller;
 
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import ru.mtuci.ib.ml_service.classification_service.DTO_Request.CreateModelRequest;
 import ru.mtuci.ib.ml_service.classification_service.DTO_Request.PredictionRequest;
@@ -36,23 +35,15 @@ public class ClassificationController {
     }
 
     @PostMapping(value = "/train")
-    public ResponseEntity<String> trainModel(@RequestBody TrainRequest Param) throws Exception {
-        try {
-            String response = service.trainModel(Param);
-            return ResponseEntity.ok(String.valueOf(response));
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
-        }
+    public String trainModel(@RequestBody TrainRequest Param) throws Exception {
+        return service.trainModel(Param);
     }
 
     @PostMapping(value = "/predict")
-    public ResponseEntity<String> predictModel(@RequestBody PredictionRequest Param) throws Exception {
-        try {
-            PredictionResponse response = service.predictModel(Param);
-            return ResponseEntity.ok(String.valueOf(response));
-        } catch (Exception e) {
-            System.out.println(e);
-            return ResponseEntity.badRequest().body(e.getMessage());
-        }
+    public PredictionResponse predictModel(@RequestBody PredictionRequest Param) throws Exception {
+        return service.predictModel(Param);
     }
+
+    //@GetMapping(value = "/getModelInfo")
+
 }
