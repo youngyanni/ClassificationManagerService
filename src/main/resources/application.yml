@@ -2,18 +2,18 @@ spring:
   application:
     name: classification-service
   datasource:
-    url: ${URL}
-    username: ${DB_USERNAME}
-    password: ${DB_PASSWORD}
-    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:postgresql://localhost:5432/mtuci_ml
+    username: mtuci_ml
+    password: password
+    driver-class-name: org.postgresql.Driver
   jpa:
     hibernate:
       ddl-auto: update
   rabbitmq:
     host: localhost
     port: 5672
-    password: {RABBITMQ_USER_USERNAME}
-    username: {RABBITMQ_USER_PASSWORD}
+    username: mtuci_ml
+    password: password
 
   cloud:
     stream:
@@ -31,7 +31,6 @@ spring:
           predictModel-out-0: general5
           savePredictModel-in-0: general5
 server:
-  port: 8082
   error:
     include-stacktrace: never
 
