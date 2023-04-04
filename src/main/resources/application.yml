@@ -2,34 +2,37 @@ spring:
   application:
     name: classification-service
   datasource:
-    url: ${URL}
-    username: ${DB_USERNAME}
-    password: ${DB_PASSWORD}
-    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:postgresql://localhost:5432/mtuci_ml
+    username: mtuci_ml
+    password: password
+    driver-class-name: org.postgresql.Driver
   jpa:
     hibernate:
       ddl-auto: update
-  rabbitmq:
-    host: localhost
-    port: 5672
-    password: {RABBITMQ_USER_USERNAME}
-    username: {RABBITMQ_USER_PASSWORD}
+    # rabbitmq:
+    #  host: localhost
+    # port: 5672
+    #password: {RABBITMQ_USER_USERNAME}
+    #username: {RABBITMQ_USER_PASSWORD}
+    show-sql: true
+
 
   cloud:
     stream:
       function:
-        definition: regProvider;predictModel;savePredictModel;newModel;saveModelInDB;trainingModel;saveNewStateInDB;
+        definition: providerRegistration;predictModel;savePredictModel;trainingModel;saveTrainedModel;newModel;saveCreatedModel;
         bindings:
-          regProvider-in-0: sharedQueue
-          newModel-in-0: general2
-          newModel-out-0: general3
-          saveModelInDB-in-0: general3
-          trainingModel-in-0: general2
-          trainingModel-out-0: general4
-          saveNewStateInDB-in-0: general4
+          providerRegistration-in-0: sharedQueue
+         #trainingModel-in-0: general2
+          #trainingModel-out-0: general4
+          #saveTrainedModel-in-0: general4
+          #newModel-in-0: general2
+          #newModel-out-0: general3
+          #saveCreatedModel-in-0: general3
           predictModel-in-0: general2
           predictModel-out-0: general5
           savePredictModel-in-0: general5
+
 server:
   port: 8082
   error:
