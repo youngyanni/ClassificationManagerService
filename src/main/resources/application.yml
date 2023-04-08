@@ -20,9 +20,9 @@ spring:
   cloud:
     stream:
       function:
-        definition: errorHandleTest;providerRegistration;predictModel;savePredictModel;trainingModel;saveTrainedModel;newModel;saveCreatedModel;
+        definition: errorHandle;providerRegistration;predictModel;savePredictModel;trainingModel;saveTrainedModel;newModel;saveCreatedModel;
         bindings:
-          errorHandleTest-in-0: sharedQueue
+          errorHandle-in-0: sharedQueue
           #providerRegistration-in-0: sharedQueue
           #trainingModel-in-0: general2
           #trainingModel-out-0: general4

@@ -10,7 +10,6 @@ import ru.mtuci.is_c.ml.classification_manager.dto.algorithms.HyperparameterDTO;
 import ru.mtuci.is_c.ml.classification_manager.enums.EnumLabels;
 
 import java.util.List;
-import java.util.UUID;
 
 @Data
 @NoArgsConstructor

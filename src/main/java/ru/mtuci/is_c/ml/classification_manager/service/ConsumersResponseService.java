@@ -6,7 +6,6 @@ import org.springframework.stereotype.Service;
 import ru.mtuci.is_c.ml.classification_manager.dto.providers.ErrorMessage;
 import ru.mtuci.is_c.ml.classification_manager.dto.providers.GeneralRequestResponse;
 import ru.mtuci.is_c.ml.classification_manager.dto.requests.ProviderRegistrationRequest;
-import ru.mtuci.is_c.ml.classification_manager.enums.EnumLabels;
 import ru.mtuci.is_c.ml.classification_manager.model.ProviderDB;
 import ru.mtuci.is_c.ml.classification_manager.repositories.ModelsRepository;
 import ru.mtuci.is_c.ml.classification_manager.repositories.ProviderRepository;
@@ -82,7 +81,6 @@ public class ConsumersResponseService {
         modelImpl.setErrorType(errorInfo.getErrorType());
         modelImpl.setErrorMessage(errorInfo.getErrorMessage());
         modelImpl.setDataTime(errorInfo.getLocalDateTime());
-        modelImpl.setStatus(errorInfo.getStage());
         modelsRepository.save(modelImpl);
     }
 }

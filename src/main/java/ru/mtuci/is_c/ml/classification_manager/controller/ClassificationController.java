@@ -1,9 +1,13 @@
 package ru.mtuci.is_c.ml.classification_manager.controller;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.annotation.JsonValue;
+
 import lombok.RequiredArgsConstructor;
-import org.springframework.web.bind.annotation.*;
+
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 import ru.mtuci.is_c.ml.classification_manager.dto.requests.CreateModelRequest;
 import ru.mtuci.is_c.ml.classification_manager.dto.requests.ModelInfoRequest;
 import ru.mtuci.is_c.ml.classification_manager.dto.requests.PredictionRequest;

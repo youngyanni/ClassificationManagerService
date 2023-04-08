@@ -22,7 +22,7 @@ public class Consumers {
     }
 
     @Bean
-    public Consumer<ErrorMessage> errorHandleTest() {
+    public Consumer<ErrorMessage> errorHandle() {
         return consumersResponse::errorHandler;
     }
 

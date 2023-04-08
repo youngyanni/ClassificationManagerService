@@ -1,6 +1,15 @@
 package ru.mtuci.is_c.ml.classification_manager.model;
 
-import jakarta.persistence.*;
+
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.Lob;
+import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -10,7 +19,6 @@ import ru.mtuci.is_c.ml.classification_manager.enums.EnumLabels;
 
 import java.sql.Blob;
 import java.time.LocalDateTime;
-import java.util.Date;
 import java.util.UUID;
 
 
@@ -25,7 +33,7 @@ public class ModelsDB {
     @Column(name = "id")
     @GeneratedValue(strategy = GenerationType.AUTO)
     private UUID id;
-    @Column(name = "Name",unique = true)
+    @Column(name = "name",unique = true)
     private String name;
     @Column(name = "model")
     @Lob
