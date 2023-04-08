@@ -3,8 +3,10 @@ package ru.mtuci.is_c.ml.classification_manager.service;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import ru.mtuci.is_c.ml.classification_manager.dto.providers.ErrorMessage;
 import ru.mtuci.is_c.ml.classification_manager.dto.providers.GeneralRequestResponse;
 import ru.mtuci.is_c.ml.classification_manager.dto.requests.ProviderRegistrationRequest;
+import ru.mtuci.is_c.ml.classification_manager.enums.EnumLabels;
 import ru.mtuci.is_c.ml.classification_manager.model.ProviderDB;
 import ru.mtuci.is_c.ml.classification_manager.repositories.ModelsRepository;
 import ru.mtuci.is_c.ml.classification_manager.repositories.ProviderRepository;
@@ -14,7 +16,9 @@ import javax.sql.rowset.serial.SerialBlob;
 import java.sql.Blob;
 import java.sql.SQLException;
 import java.util.Arrays;
+import java.util.UUID;
 import java.util.stream.Collectors;
+
 
 @RequiredArgsConstructor
 @Service
@@ -43,7 +47,7 @@ public class ConsumersResponseService {
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
-        var modelImpl = modelsRepository.findById(modelParameters.getModelId()).orElseThrow();
+        var modelImpl = modelsRepository.findById(UUID.fromString(modelParameters.getModelId())).orElseThrow();
         modelImpl.setModel(state);
         modelImpl.setStatus(modelParameters.getModelLabel());
         modelsRepository.save(modelImpl);
@@ -51,7 +55,7 @@ public class ConsumersResponseService {
 
     @Transactional
     public void saveTrainedModel(GeneralRequestResponse modelParameters) {
-        var modelImpl = modelsRepository.findById(modelParameters.getModelId()).orElseThrow();
+        var modelImpl = modelsRepository.findById(UUID.fromString(modelParameters.getModelId())).orElseThrow();
         Blob state;
         try {
             state = new SerialBlob(modelParameters.getModel().getCreatedModel().getBytes());
@@ -66,9 +70,19 @@ public class ConsumersResponseService {
 
     @Transactional
     public void savePredictedModel(GeneralRequestResponse modelParameters) {
-        final var currentModel = modelsRepository.findById(modelParameters.getModelId()).orElseThrow();
-        currentModel.setStatus(modelParameters.getModelLabel());
-        currentModel.setPredict(Arrays.toString(modelParameters.getPrediction()));
-        modelsRepository.save(currentModel);
+        final var modelImpl = modelsRepository.findById(UUID.fromString(modelParameters.getModelId())).orElseThrow();
+        modelImpl.setStatus(modelParameters.getModelLabel());
+        modelImpl.setPredict(Arrays.toString(modelParameters.getPrediction()));
+        modelsRepository.save(modelImpl);
+    }
+
+    @Transactional
+    public void errorHandler(ErrorMessage errorInfo) {
+        final var modelImpl = modelsRepository.findById(UUID.fromString(errorInfo.getModelId())).orElseThrow();
+        modelImpl.setErrorType(errorInfo.getErrorType());
+        modelImpl.setErrorMessage(errorInfo.getErrorMessage());
+        modelImpl.setDataTime(errorInfo.getLocalDateTime());
+        modelImpl.setStatus(errorInfo.getStage());
+        modelsRepository.save(modelImpl);
     }
 }

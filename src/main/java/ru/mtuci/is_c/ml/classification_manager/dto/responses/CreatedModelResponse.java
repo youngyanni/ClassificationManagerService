@@ -4,6 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import ru.mtuci.is_c.ml.classification_manager.enums.EnumLabels;
 
 @Data
 @NoArgsConstructor
@@ -11,7 +12,7 @@ import lombok.NoArgsConstructor;
 @Builder
 public class CreatedModelResponse {
     private String name;
-    private String modelLabel;
+    private EnumLabels status;
     private String metrics;
 
 }

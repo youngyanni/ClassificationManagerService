@@ -19,7 +19,7 @@ import java.util.UUID;
 @Builder
 public class GeneralRequestResponse {
     private EnumLabels modelLabel;
-    private UUID modelId;
+    private String modelId;
     private String classifier;
     private List<HyperparameterDTO> options;
     private List<List<Object>> features;

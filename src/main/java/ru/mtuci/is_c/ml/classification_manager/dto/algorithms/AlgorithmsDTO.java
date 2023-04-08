@@ -13,5 +13,5 @@ import java.util.List;
 @Builder
 public class AlgorithmsDTO {
     private String algName;
-    private List<HyperparameterDTO> hyperparameterRespons;
+    private List<HyperparameterDTO> hyperparameters;
 }

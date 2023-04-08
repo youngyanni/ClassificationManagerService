@@ -20,18 +20,19 @@ spring:
   cloud:
     stream:
       function:
-        definition: providerRegistration;predictModel;savePredictModel;trainingModel;saveTrainedModel;newModel;saveCreatedModel;
+        definition: errorHandleTest;providerRegistration;predictModel;savePredictModel;trainingModel;saveTrainedModel;newModel;saveCreatedModel;
         bindings:
-          providerRegistration-in-0: sharedQueue
-         #trainingModel-in-0: general2
+          errorHandleTest-in-0: sharedQueue
+          #providerRegistration-in-0: sharedQueue
+          #trainingModel-in-0: general2
           #trainingModel-out-0: general4
           #saveTrainedModel-in-0: general4
-          #newModel-in-0: general2
-          #newModel-out-0: general3
-          #saveCreatedModel-in-0: general3
-          predictModel-in-0: general2
-          predictModel-out-0: general5
-          savePredictModel-in-0: general5
+          newModel-in-0: general2
+          newModel-out-0: general3
+          saveCreatedModel-in-0: general3
+          #predictModel-in-0: general2
+          #predictModel-out-0: general5
+          #savePredictModel-in-0: general5
 
 server:
   port: 8082

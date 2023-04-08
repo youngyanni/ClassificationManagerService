@@ -9,6 +9,8 @@ import ru.mtuci.is_c.ml.classification_manager.enums.EnumLabels;
 
 
 import java.sql.Blob;
+import java.time.LocalDateTime;
+import java.util.Date;
 import java.util.UUID;
 
 
@@ -37,4 +39,10 @@ public class ModelsDB {
     private String predict;
     @Column(name = "algorithm")
     private String algorithm;
+    @Column(name = "error_type")
+    private String errorType;
+    @Column(name = "error_message")
+    private String errorMessage;
+    @Column(name = "data_time")
+    private LocalDateTime dataTime;
 }

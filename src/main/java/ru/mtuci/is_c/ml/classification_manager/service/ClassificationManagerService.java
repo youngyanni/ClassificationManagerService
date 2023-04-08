@@ -7,6 +7,7 @@ import org.springframework.stereotype.Service;
 import ru.mtuci.is_c.ml.classification_manager.dto.providers.GeneralRequestResponse;
 import ru.mtuci.is_c.ml.classification_manager.dto.providers.SerializedCreatedModel;
 import ru.mtuci.is_c.ml.classification_manager.dto.requests.CreateModelRequest;
+import ru.mtuci.is_c.ml.classification_manager.dto.requests.ModelInfoRequest;
 import ru.mtuci.is_c.ml.classification_manager.dto.requests.PredictionRequest;
 import ru.mtuci.is_c.ml.classification_manager.dto.requests.TrainRequest;
 import ru.mtuci.is_c.ml.classification_manager.dto.responses.AvailableAlgorithmsResponse;
@@ -20,6 +21,7 @@ import ru.mtuci.is_c.ml.classification_manager.repositories.ProviderRepository;
 import org.springframework.cloud.stream.function.StreamBridge;
 import ru.mtuci.is_c.ml.classification_manager.utils.MappingUtils;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -44,11 +46,7 @@ public class ClassificationManagerService {
     public List<CreatedModelResponse> getCreatedModels() {
         return modelsRepository.findAll()
                 .stream()
-                .map(entry -> CreatedModelResponse.builder()
-                        .name(entry.getName())
-                        .modelLabel(entry.getStatus().name())
-                        .metrics(entry.getMetrics())
-                        .build())
+                .map(MappingUtils::modelToCreatedModelResponse)
                 .collect(Collectors.toList());
     }
 
@@ -64,7 +62,7 @@ public class ClassificationManagerService {
         streamBridge.send(topic, GeneralRequestResponse.builder()
                 .classifier(param.getNameAlg())
                 .options(param.getHyperParam())
-                .modelId(model.getId())
+                .modelId(model.getId().toString())
                 .modelLabel(EnumLabels.CREATE)
                 .build());
         return param.getNameModel();
@@ -73,19 +71,17 @@ public class ClassificationManagerService {
     @Transactional
     public String trainModel(TrainRequest param) throws Exception {
         var modelImpl = modelsRepository.findByName(param.getNameModel());
-        System.out.println(modelImpl);
         if (modelImpl == null) {
             throw new Exception("Model not found");
         }
         var topic = providerRepository.findTopic(algorithmsRepository.findIdByAlgName(modelImpl.getAlgorithm()));
-        System.out.println(topic);
         modelImpl.setStatus(EnumLabels.CREATED);
         modelsRepository.save(modelImpl);
         streamBridge.send(topic, GeneralRequestResponse.builder()
                 .model(SerializedCreatedModel.builder()
                         .createdModel(modelImpl.getModel().toString())
                         .build())
-                .modelId(modelImpl.getId())
+                .modelId(modelImpl.getId().toString())
                 .features(param.getFeatures())
                 .labels(param.getLabels())
                 .modelLabel(EnumLabels.TRAIN)
@@ -104,7 +100,7 @@ public class ClassificationManagerService {
                 .model(SerializedCreatedModel.builder()
                         .createdModel(modelImpl.getModel().toString())
                         .build())
-                .modelId(modelImpl.getId())
+                .modelId(modelImpl.getId().toString())
                 .features(param.getFeatures())
                 .modelLabel(EnumLabels.PREDICT)
                 .build());
@@ -113,5 +109,41 @@ public class ClassificationManagerService {
                 .nameModel(param.getNameModel())
                 .predict(modelImpl.getPredict())
                 .build();
+    }
+
+    @Transactional
+    public List<Object> getModelInfo(ModelInfoRequest modelId) throws Exception {
+        var modelImpl = modelsRepository.findByName(modelId.getModelName());
+        if (modelImpl == null) {
+            throw new Exception("Model not found");
+        }
+        var modelInfoResponse = new ArrayList<>();
+        switch (modelImpl.getStatus()) {
+            case CREATE, TRAIN, PREDICT, SENT_FOR_TRAIN, SENT_FOR_CREATE, SENT_FOR_PREDICT, CREATED -> {
+                modelInfoResponse.add(modelImpl.getName());
+                modelInfoResponse.add(modelImpl.getStatus().getDescription());
+                modelInfoResponse.add(modelImpl.getDataTime());
+            }
+            case TRAINED -> {
+                modelInfoResponse.add(modelImpl.getName());
+                modelInfoResponse.add(modelImpl.getStatus().getDescription());
+                modelInfoResponse.add(modelImpl.getMetrics());
+                modelInfoResponse.add(modelImpl.getDataTime());
+            }
+            case PREDICTED -> {
+                modelInfoResponse.add(modelImpl.getName());
+                modelInfoResponse.add(modelImpl.getStatus().getDescription());
+                modelInfoResponse.add(modelImpl.getPredict());
+                modelInfoResponse.add(modelImpl.getDataTime());
+            }
+            case ERROR_TRAIN, ERROR_CREATE, ERROR_PREDICT -> {
+                modelInfoResponse.add(modelImpl.getName());
+                modelInfoResponse.add(modelImpl.getStatus());
+                modelInfoResponse.add(modelImpl.getErrorType());
+                modelInfoResponse.add(modelImpl.getErrorMessage());
+                modelInfoResponse.add(modelImpl.getDataTime());
+            }
+        }
+        return modelInfoResponse;
     }
 }

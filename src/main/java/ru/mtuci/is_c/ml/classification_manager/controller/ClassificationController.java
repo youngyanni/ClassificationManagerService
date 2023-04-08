@@ -1,8 +1,11 @@
 package ru.mtuci.is_c.ml.classification_manager.controller;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonValue;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 import ru.mtuci.is_c.ml.classification_manager.dto.requests.CreateModelRequest;
+import ru.mtuci.is_c.ml.classification_manager.dto.requests.ModelInfoRequest;
 import ru.mtuci.is_c.ml.classification_manager.dto.requests.PredictionRequest;
 import ru.mtuci.is_c.ml.classification_manager.dto.requests.TrainRequest;
 import ru.mtuci.is_c.ml.classification_manager.dto.responses.AvailableAlgorithmsResponse;
@@ -44,6 +47,9 @@ public class ClassificationController {
         return service.predictModel(Param);
     }
 
-    //@GetMapping(value = "/getModelInfo")
+    @GetMapping(value = "/getModelInfo")
+    public List<Object> getModelInfo(@RequestBody ModelInfoRequest modelId) throws Exception {
+        return service.getModelInfo(modelId);
+    }
 
 }

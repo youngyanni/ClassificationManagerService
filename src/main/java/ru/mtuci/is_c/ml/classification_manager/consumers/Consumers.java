@@ -4,6 +4,7 @@ package ru.mtuci.is_c.ml.classification_manager.consumers;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.stereotype.Component;
+import ru.mtuci.is_c.ml.classification_manager.dto.providers.ErrorMessage;
 import ru.mtuci.is_c.ml.classification_manager.dto.providers.GeneralRequestResponse;
 import ru.mtuci.is_c.ml.classification_manager.dto.requests.ProviderRegistrationRequest;
 import ru.mtuci.is_c.ml.classification_manager.service.ConsumersResponseService;
@@ -21,6 +22,11 @@ public class Consumers {
     }
 
     @Bean
+    public Consumer<ErrorMessage> errorHandleTest() {
+        return consumersResponse::errorHandler;
+    }
+
+    @Bean
     public Consumer<GeneralRequestResponse> saveCreatedModel() {
         return consumersResponse::saveCreatedModel;
     }
@@ -34,9 +40,4 @@ public class Consumers {
     public Consumer<GeneralRequestResponse> savePredictModel() {
         return consumersResponse::savePredictedModel;
     }
-    /*@Bean
-    public Consumer<ErrorMessage> errorHandler(){
-        return error -> {
-        }
-    }*/
 }
