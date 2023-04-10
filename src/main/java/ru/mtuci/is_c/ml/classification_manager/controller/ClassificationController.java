@@ -8,7 +8,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import ru.mtuci.is_c.ml.classification_manager.Exception.ModelNotFoundException;
+import ru.mtuci.is_c.ml.classification_manager.exception.ModelNotFoundException;
 import ru.mtuci.is_c.ml.classification_manager.dto.requests.CreateModelRequest;
 import ru.mtuci.is_c.ml.classification_manager.dto.requests.PredictionRequest;
 import ru.mtuci.is_c.ml.classification_manager.dto.requests.TrainRequest;

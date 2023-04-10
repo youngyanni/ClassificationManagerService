@@ -4,7 +4,7 @@ import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-import ru.mtuci.is_c.ml.classification_manager.Exception.ModelNotFoundException;
+import ru.mtuci.is_c.ml.classification_manager.exception.ModelNotFoundException;
 import ru.mtuci.is_c.ml.classification_manager.dto.providers.GeneralRequestResponse;
 import ru.mtuci.is_c.ml.classification_manager.dto.providers.SerializedCreatedModel;
 import ru.mtuci.is_c.ml.classification_manager.dto.requests.CreateModelRequest;

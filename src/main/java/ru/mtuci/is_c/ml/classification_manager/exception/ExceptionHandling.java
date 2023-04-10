@@ -1,4 +1,4 @@
-package ru.mtuci.is_c.ml.classification_manager.Exception;
+package ru.mtuci.is_c.ml.classification_manager.exception;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 
 @ControllerAdvice
-public class ErrorHandling extends ResponseEntityExceptionHandler {
+public class ExceptionHandling extends ResponseEntityExceptionHandler {
     @Data
     @AllArgsConstructor
     private static class NotFoundModelException {

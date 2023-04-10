@@ -1,4 +1,4 @@
-package ru.mtuci.is_c.ml.classification_manager.Exception;
+package ru.mtuci.is_c.ml.classification_manager.exception;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
