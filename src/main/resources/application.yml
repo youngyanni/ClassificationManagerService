@@ -9,11 +9,11 @@ spring:
   jpa:
     hibernate:
       ddl-auto: update
-    # rabbitmq:
-    #  host: localhost
-    # port: 5672
-    #password: {RABBITMQ_USER_USERNAME}
-    #username: {RABBITMQ_USER_PASSWORD}
+  rabbitmq:
+    host: localhost
+    port: 5672
+    password: { RABBITMQ_USER_USERNAME }
+    username: { RABBITMQ_USER_PASSWORD }
     show-sql: true
 
 
@@ -22,11 +22,11 @@ spring:
       function:
         definition: errorHandle;providerRegistration;predictModel;savePredictModel;trainingModel;saveTrainedModel;newModel;saveCreatedModel;
         bindings:
-          errorHandle-in-0: sharedQueue
-          #providerRegistration-in-0: sharedQueue
-          trainingModel-in-0: general2
-          trainingModel-out-0: general4
-          saveTrainedModel-in-0: general4
+          errorHandle-in-0: error-message
+          providerRegistration-in-0: manager_in
+          #trainingModel-in-0: general2
+          #trainingModel-out-0: general4
+          #saveTrainedModel-in-0: general4
           #newModel-in-0: general2
           #newModel-out-0: general3
           #saveCreatedModel-in-0: general3
