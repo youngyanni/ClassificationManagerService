@@ -8,8 +8,8 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import ru.mtuci.is_c.ml.classification_manager.Exception.ModelNotFoundException;
 import ru.mtuci.is_c.ml.classification_manager.dto.requests.CreateModelRequest;
-import ru.mtuci.is_c.ml.classification_manager.dto.requests.ModelInfoRequest;
 import ru.mtuci.is_c.ml.classification_manager.dto.requests.PredictionRequest;
 import ru.mtuci.is_c.ml.classification_manager.dto.requests.TrainRequest;
 import ru.mtuci.is_c.ml.classification_manager.dto.responses.AvailableAlgorithmsResponse;
@@ -42,7 +42,7 @@ public class ClassificationController {
     }
 
     @PostMapping(value = "/train")
-    public String trainModel(@RequestBody TrainRequest Param) throws Exception {
+    public String trainModel(@RequestBody TrainRequest Param) throws ModelNotFoundException {
         return service.trainModel(Param);
     }
 
@@ -50,10 +50,4 @@ public class ClassificationController {
     public PredictionResponse predictModel(@RequestBody PredictionRequest Param) throws Exception {
         return service.predictModel(Param);
     }
-
-    @GetMapping(value = "/getModelInfo")
-    public List<Object> getModelInfo(@RequestBody ModelInfoRequest modelId) throws Exception {
-        return service.getModelInfo(modelId);
-    }
-
 }

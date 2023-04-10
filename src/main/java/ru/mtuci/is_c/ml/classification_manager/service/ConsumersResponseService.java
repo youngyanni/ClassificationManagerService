@@ -78,9 +78,10 @@ public class ConsumersResponseService {
     @Transactional
     public void errorHandler(ErrorMessage errorInfo) {
         final var modelImpl = modelsRepository.findById(UUID.fromString(errorInfo.getModelId())).orElseThrow();
-        modelImpl.setErrorType(errorInfo.getErrorType());
-        modelImpl.setErrorMessage(errorInfo.getErrorMessage());
-        modelImpl.setDataTime(errorInfo.getLocalDateTime());
+        var errorMessageBuilder = "" + errorInfo.getErrorType() +
+                "; " + errorInfo.getErrorMessage() +
+                "; " + errorInfo.getLocalDateTime();
+        modelImpl.setErrorMessage(errorMessageBuilder);
         modelsRepository.save(modelImpl);
     }
 }

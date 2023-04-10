@@ -12,7 +12,10 @@ import ru.mtuci.is_c.ml.classification_manager.enums.EnumLabels;
 @Builder
 public class CreatedModelResponse {
     private String name;
-    private EnumLabels status;
     private String metrics;
-
+    private EnumLabels status;
+    private String predict;
+    private String algorithm;
+    private String errorMessage;
 }
+

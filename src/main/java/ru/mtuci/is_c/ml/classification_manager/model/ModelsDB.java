@@ -47,10 +47,6 @@ public class ModelsDB {
     private String predict;
     @Column(name = "algorithm")
     private String algorithm;
-    @Column(name = "error_type")
-    private String errorType;
     @Column(name = "error_message")
     private String errorMessage;
-    @Column(name = "data_time")
-    private LocalDateTime dataTime;
 }
