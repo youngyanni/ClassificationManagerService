@@ -17,5 +17,6 @@ public class CreatedModelResponse {
     private String predict;
     private String algorithm;
     private String errorMessage;
+    private String attribute;
 }
 

@@ -11,7 +11,7 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 public class ProviderRegistrationRequest {
-    private String providerName;
+    private String provider;
     private List<AlgorithmsDTO> algorithms;
-    private String topicName;
+    private String topic;
 }

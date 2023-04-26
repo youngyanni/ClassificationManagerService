@@ -48,4 +48,6 @@ public class ModelsDB {
     private String algorithm;
     @Column(name = "error_message")
     private String errorMessage;
+    @Column(name = "attribute",length = 1000)
+    private String attribute;
 }

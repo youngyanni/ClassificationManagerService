@@ -20,12 +20,9 @@ public class GeneralRequestResponse {
     private EnumLabels modelLabel;
     private String modelId;
     private String classifier;
-    private List<HyperparameterDTO> options;
+    private List<Hyperparameters> options;
     private List<List<Object>> features;
     private List<Object> labels;
-    private SerializedCreatedModel model;
-    private List<String> predictLabels;
-    private double[] prediction;
+    private SerializedCreatedModel serializedModelData;
     private String metrics;
-
 }

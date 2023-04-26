@@ -4,6 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import ru.mtuci.is_c.ml.classification_manager.dto.algorithms.HyperparameterDTO;
+import ru.mtuci.is_c.ml.classification_manager.dto.providers.Hyperparameters;
 
 import java.util.List;
 
@@ -13,5 +14,5 @@ import java.util.List;
 public class CreateModelRequest {
     private String nameModel;
     private String nameAlg;
-    private List<HyperparameterDTO> hyperParam;
+    private List<Hyperparameters> hyperParam;
 }

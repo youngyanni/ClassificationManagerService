@@ -1,4 +1,3 @@
 FROM openjdk:17-oracle
-COPY target/*.jar /usr/app/classifier-manager.jar
-EXPOSE 8080
+COPY *.jar /usr/app/classifier-manager.jar
 ENTRYPOINT ["java","-jar","/usr/app/classifier-manager.jar"]

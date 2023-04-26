@@ -1,0 +1,73 @@
+version: '3'
+services:
+  postgres:
+    container_name: mtuci_ml
+    image: postgres:alpine
+    environment:
+      - POSTGRES_USER=mtuci_ml
+      - POSTGRES_PASSWORD=password
+    ports:
+      - "5432:5432"
+    deploy:
+      resources:
+        limits:
+          cpus: '2'
+          memory: '2G'
+    networks:
+      - connector
+  rabbit:
+    container_name: rabbit-services
+    image: 'bitnami/rabbitmq:latest'
+    environment:
+      RABBITMQ_USERNAME: user
+      RABBITMQ_PASSWORD: password
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    networks:
+      - connector
+  classifier-service:
+    container_name: spring-classifier
+    build:
+      context: ./ClassifierService/
+      dockerfile: Dockerfile
+    ports:
+      - "8082:8082"
+    deploy:
+        resources:
+          limits:
+            cpus: '2'
+            memory: '2G'
+    networks:
+      - connector
+    depends_on:
+      - postgres
+
+  weka-service:
+    container_name: spring-weka
+    build:
+      context: ./WekaService/
+      dockerfile: Dockerfile
+    ports:
+      - "8090:8090"
+    deploy:
+      resources:
+        limits:
+          cpus: '2'
+          memory: '2G'
+    networks:
+      - connector
+    depends_on:
+      - classifier-service
+    restart: always
+  python-service:
+    container_name: python
+    build:
+      context: C:\Users\yan\Desktop\nn_microservice-main
+      dockerfile: Dockerfile
+    networks:
+      - connector
+    restart: always
+networks:
+  connector:
+    driver: bridge

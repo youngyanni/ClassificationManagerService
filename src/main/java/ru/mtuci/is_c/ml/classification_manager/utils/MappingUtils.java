@@ -13,12 +13,13 @@ import java.util.stream.Collectors;
 public class MappingUtils {
     private static final ModelMapper modelMapper = new ModelMapper();
 
-    public static <T> T conversion(Object hyperparameterDTOInfo, Class<T> clazz) {
-        return modelMapper.map(hyperparameterDTOInfo, clazz);
+    public static <T> T conversion(Object hyperparameterDTOInfo, Class<T> classToConvert) {
+        return modelMapper.map(hyperparameterDTOInfo, classToConvert);
     }
 
     public static AlgorithmsDB mapAlgorithmsToEntity(AlgorithmsDTO algInfo) {
         var AlgorithmsEntity = modelMapper.map(algInfo, AlgorithmsDB.class);
+        AlgorithmsEntity.setAlgName(algInfo.getAlgorithmName());
         AlgorithmsEntity.setHyperparametersDBList(algInfo.getHyperparameters()
                 .stream()
                 .map(e -> conversion(e, HyperparametersDB.class))
@@ -28,6 +29,7 @@ public class MappingUtils {
 
     public static AlgorithmsDTO AlgorithmsEntityToDTO(AlgorithmsDB algInfo) {
         var algorithm = modelMapper.map(algInfo, AlgorithmsDTO.class);
+        algorithm.setAlgorithmName(algInfo.getAlgName());
         algorithm.setHyperparameters(algInfo.getHyperparametersDBList()
                 .stream()
                 .map(e -> conversion(e, HyperparameterDTO.class))
@@ -37,6 +39,7 @@ public class MappingUtils {
 
     public static AvailableAlgorithmsResponse AlgorithmsEntityToDTO(ProviderDB alginfo) {
         var algorithmsResponse = modelMapper.map(alginfo, AvailableAlgorithmsResponse.class);
+
         algorithmsResponse.setPoroviderName(alginfo.getProviderName());
         algorithmsResponse.setAlgList(alginfo.getAlg()
                 .stream()

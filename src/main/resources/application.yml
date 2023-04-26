@@ -1,41 +1,49 @@
+server:
+  port: 8082
+  error:
+    include-stacktrace: never
+    include-message: always
 spring:
   application:
     name: classification-service
   datasource:
-    url: jdbc:postgresql://localhost:5432/mtuci_ml
+    url: jdbc:postgresql://postgres:5432/mtuci_ml
     username: mtuci_ml
     password: password
     driver-class-name: org.postgresql.Driver
   jpa:
     hibernate:
       ddl-auto: update
-  rabbitmq:
-    host: localhost
-    port: 5672
-    password: { RABBITMQ_USER_USERNAME }
-    username: { RABBITMQ_USER_PASSWORD }
-    show-sql: true
+  #rabbitmq:
+#    host: localhost
+ #   port: 5672
+ #   password: { RABBITMQ_USER_USERNAME }
+   # username: { RABBITMQ_USER_PASSWORD }
+   # show-sql: true
 
 
   cloud:
     stream:
       function:
-        definition: errorHandle;providerRegistration;predictModel;savePredictModel;trainingModel;saveTrainedModel;newModel;saveCreatedModel;
-        bindings:
-          errorHandle-in-0: error-message
-          providerRegistration-in-0: manager_in
-          #trainingModel-in-0: general2
-          #trainingModel-out-0: general4
-          #saveTrainedModel-in-0: general4
-          #newModel-in-0: general2
-          #newModel-out-0: general3
-          #saveCreatedModel-in-0: general3
-          #predictModel-in-0: general2
-          #predictModel-out-0: general5
-          #savePredictModel-in-0: general5
-
-server:
-  port: 8082
-  error:
-    include-stacktrace: never
-    include-message: always
+        definition: errorHandle;registrationRequest;saveModel;
+      bindings:
+        errorHandle-in-0:
+          destination: error-message
+          binder: local_rabbit
+        #registrationRequest-in-0:
+          #destination: manager_in
+          #binder: local_rabbit
+        saveModel-in-0:
+          destination: manager_in
+          binder: local_rabbit
+      binders:
+        local_rabbit:
+          type: rabbit
+          environment:
+            spring:
+              rabbitmq:
+                host: rabbit
+                port: 5672
+                username: yan
+                password: password1
+                virtual-host: /

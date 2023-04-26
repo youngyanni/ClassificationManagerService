@@ -2,6 +2,7 @@ package ru.mtuci.is_c.ml.classification_manager.service;
 
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import ru.mtuci.is_c.ml.classification_manager.exception.ModelNotFoundException;
@@ -21,6 +22,7 @@ import ru.mtuci.is_c.ml.classification_manager.repositories.ProviderRepository;
 import org.springframework.cloud.stream.function.StreamBridge;
 import ru.mtuci.is_c.ml.classification_manager.utils.MappingUtils;
 
+import java.util.Base64;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -58,6 +60,12 @@ public class ClassificationManagerService {
                 .algorithm(param.getNameAlg())
                 .build();
         modelsRepository.save(model);
+        System.out.println(GeneralRequestResponse.builder()
+                .classifier(param.getNameAlg())
+                .options(param.getHyperParam())
+                .modelId(model.getId().toString())
+                .modelLabel(EnumLabels.CREATE)
+                .build());
         streamBridge.send(topic, GeneralRequestResponse.builder()
                 .classifier(param.getNameAlg())
                 .options(param.getHyperParam())
@@ -68,6 +76,7 @@ public class ClassificationManagerService {
     }
 
     @Transactional
+    @SneakyThrows
     public String trainModel(TrainRequest param) {
         var modelImpl = modelsRepository.findByName(param.getNameModel());
         if (modelImpl == null) {
@@ -77,8 +86,8 @@ public class ClassificationManagerService {
         modelImpl.setStatus(EnumLabels.CREATED);
         modelsRepository.save(modelImpl);
         streamBridge.send(topic, GeneralRequestResponse.builder()
-                .model(SerializedCreatedModel.builder()
-                        .createdModel(modelImpl.getModel().toString())
+                .serializedModelData(SerializedCreatedModel.builder()
+                        .model(Base64.getEncoder().encodeToString(modelImpl.getModel().getBytes(1L,(int) modelImpl.getModel().length())))
                         .build())
                 .modelId(modelImpl.getId().toString())
                 .features(param.getFeatures())
@@ -89,6 +98,7 @@ public class ClassificationManagerService {
     }
 
     @Transactional
+    @SneakyThrows
     public PredictionResponse predictModel(PredictionRequest param) {
         var modelImpl = modelsRepository.findByName(param.getNameModel());
         if (modelImpl == null) {
@@ -96,8 +106,9 @@ public class ClassificationManagerService {
         }
         var topic = providerRepository.findTopic(algorithmsRepository.findIdByAlgName(modelImpl.getAlgorithm()));
         streamBridge.send(topic, GeneralRequestResponse.builder()
-                .model(SerializedCreatedModel.builder()
-                        .createdModel(modelImpl.getModel().toString())
+                .serializedModelData(SerializedCreatedModel.builder()
+                        .model(Base64.getEncoder().encodeToString(modelImpl.getModel().getBytes(1L,(int) modelImpl.getModel().length())))
+                        .attribute(modelImpl.getAttribute())
                         .build())
                 .modelId(modelImpl.getId().toString())
                 .features(param.getFeatures())
