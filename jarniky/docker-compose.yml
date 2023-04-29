@@ -63,7 +63,7 @@ services:
   python-service:
     container_name: python
     build:
-      context: C:\Users\yan\Desktop\nn_microservice-main
+      context: C:\Users\yan\Desktop\nn_microservice-master
       dockerfile: Dockerfile
     networks:
       - connector

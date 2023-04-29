@@ -2,9 +2,9 @@ package ru.mtuci.is_c.ml.classification_manager.service;
 
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
-import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import ru.mtuci.is_c.ml.classification_manager.exception.DuplicateNameError;
 import ru.mtuci.is_c.ml.classification_manager.exception.ModelNotFoundException;
 import ru.mtuci.is_c.ml.classification_manager.dto.providers.GeneralRequestResponse;
 import ru.mtuci.is_c.ml.classification_manager.dto.providers.SerializedCreatedModel;
@@ -22,7 +22,7 @@ import ru.mtuci.is_c.ml.classification_manager.repositories.ProviderRepository;
 import org.springframework.cloud.stream.function.StreamBridge;
 import ru.mtuci.is_c.ml.classification_manager.utils.MappingUtils;
 
-import java.util.Base64;
+
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -53,41 +53,48 @@ public class ClassificationManagerService {
 
     @Transactional
     public String createModel(CreateModelRequest param) {
+        var modelImpl = modelsRepository.findByName(param.getNameModel());
+        if (modelImpl == null) {
+            modelImpl = ModelsDB.builder()
+                    .name(param.getNameModel())
+                    .status(EnumLabels.SENT_FOR_CREATE)
+                    .algorithm(param.getNameAlg())
+                    .hyperparams(String.valueOf(param.getHyperParam().stream().map(params -> params.getName() + ": " + params.getValue()).collect(Collectors.toList())))
+                    .build();
+        } else {
+            throw new DuplicateNameError(param.getNameModel());
+        }
+        modelsRepository.save(modelImpl);
         var topic = providerRepository.findTopic(algorithmsRepository.findIdByAlgName(param.getNameAlg()));
-        var model = ModelsDB.builder()
-                .name(param.getNameModel())
-                .status(EnumLabels.SENT_FOR_CREATE)
-                .algorithm(param.getNameAlg())
-                .build();
-        modelsRepository.save(model);
-        System.out.println(GeneralRequestResponse.builder()
-                .classifier(param.getNameAlg())
-                .options(param.getHyperParam())
-                .modelId(model.getId().toString())
-                .modelLabel(EnumLabels.CREATE)
-                .build());
         streamBridge.send(topic, GeneralRequestResponse.builder()
                 .classifier(param.getNameAlg())
                 .options(param.getHyperParam())
-                .modelId(model.getId().toString())
+                .modelId(modelImpl.getId().toString())
                 .modelLabel(EnumLabels.CREATE)
                 .build());
         return param.getNameModel();
     }
 
     @Transactional
-    @SneakyThrows
+    public String deleteModel(String modelName) {
+        System.out.println(modelName);
+        var model = modelsRepository.findByName(modelName);
+        modelsRepository.deleteById(model.getId());
+        return "Модель удалена";
+    }
+
+    @Transactional
     public String trainModel(TrainRequest param) {
         var modelImpl = modelsRepository.findByName(param.getNameModel());
         if (modelImpl == null) {
             throw new ModelNotFoundException(param.getNameModel());
         }
-        var topic = providerRepository.findTopic(algorithmsRepository.findIdByAlgName(modelImpl.getAlgorithm()));
-        modelImpl.setStatus(EnumLabels.CREATED);
+        modelImpl.setStatus(EnumLabels.SENT_FOR_TRAIN);
         modelsRepository.save(modelImpl);
+        var topic = providerRepository.findTopic(algorithmsRepository.findIdByAlgName(modelImpl.getAlgorithm()));
         streamBridge.send(topic, GeneralRequestResponse.builder()
                 .serializedModelData(SerializedCreatedModel.builder()
-                        .model(Base64.getEncoder().encodeToString(modelImpl.getModel().getBytes(1L,(int) modelImpl.getModel().length())))
+                        .model(modelImpl.getModel())
                         .build())
                 .modelId(modelImpl.getId().toString())
                 .features(param.getFeatures())
@@ -98,7 +105,6 @@ public class ClassificationManagerService {
     }
 
     @Transactional
-    @SneakyThrows
     public PredictionResponse predictModel(PredictionRequest param) {
         var modelImpl = modelsRepository.findByName(param.getNameModel());
         if (modelImpl == null) {
@@ -107,7 +113,7 @@ public class ClassificationManagerService {
         var topic = providerRepository.findTopic(algorithmsRepository.findIdByAlgName(modelImpl.getAlgorithm()));
         streamBridge.send(topic, GeneralRequestResponse.builder()
                 .serializedModelData(SerializedCreatedModel.builder()
-                        .model(Base64.getEncoder().encodeToString(modelImpl.getModel().getBytes(1L,(int) modelImpl.getModel().length())))
+                        .model(modelImpl.getModel())
                         .attribute(modelImpl.getAttribute())
                         .build())
                 .modelId(modelImpl.getId().toString())

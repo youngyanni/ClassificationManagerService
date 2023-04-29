@@ -6,7 +6,6 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import ru.mtuci.is_c.ml.classification_manager.dto.algorithms.HyperparameterDTO;
 import ru.mtuci.is_c.ml.classification_manager.enums.EnumLabels;
 
 import java.util.List;
@@ -24,5 +23,5 @@ public class GeneralRequestResponse {
     private List<List<Object>> features;
     private List<Object> labels;
     private SerializedCreatedModel serializedModelData;
-    private String metrics;
+    private double[] metrics;
 }

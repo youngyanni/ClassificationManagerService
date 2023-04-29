@@ -14,26 +14,18 @@ spring:
   jpa:
     hibernate:
       ddl-auto: update
-  #rabbitmq:
-#    host: localhost
- #   port: 5672
- #   password: { RABBITMQ_USER_USERNAME }
-   # username: { RABBITMQ_USER_PASSWORD }
-   # show-sql: true
-
-
   cloud:
     stream:
       function:
-        definition: errorHandle;registrationRequest;saveModel;
+        definition: errorHandle;saveModel;registrationRequest;
       bindings:
         errorHandle-in-0:
           destination: error-message
           binder: local_rabbit
-        #registrationRequest-in-0:
-          #destination: manager_in
-          #binder: local_rabbit
         saveModel-in-0:
+          destination: manager_in
+          binder: local_rabbit
+        registrationRequest-in-0:
           destination: manager_in
           binder: local_rabbit
       binders:

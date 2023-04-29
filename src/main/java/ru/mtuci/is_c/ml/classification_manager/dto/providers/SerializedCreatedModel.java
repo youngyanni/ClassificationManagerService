@@ -16,8 +16,8 @@ import java.util.Map;
 @Getter
 @Builder
 public class SerializedCreatedModel {
-    private String model;
+    private byte[] model;
     private String attribute;
-    private List<String> labels;
-    private List<Map<String, Double>> distributions;
+    private List<Double> labels;
+    private List<Map<Double, Double>> distributions;
 }
