@@ -2,21 +2,17 @@ package ru.mtuci.is_c.ml.classification_manager.service;
 
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import ru.mtuci.is_c.ml.classification_manager.dto.providers.ErrorMessage;
 import ru.mtuci.is_c.ml.classification_manager.dto.providers.GeneralRequestResponse;
 import ru.mtuci.is_c.ml.classification_manager.dto.providers.ProviderRegistrationRequest;
 import ru.mtuci.is_c.ml.classification_manager.enums.EnumLabels;
-import ru.mtuci.is_c.ml.classification_manager.model.PreproccesingDataDB;
 import ru.mtuci.is_c.ml.classification_manager.model.ProvidersDB;
 import ru.mtuci.is_c.ml.classification_manager.repositories.ModelsRepository;
 import ru.mtuci.is_c.ml.classification_manager.repositories.PreproccesingDataRepository;
 import ru.mtuci.is_c.ml.classification_manager.repositories.ProviderRepository;
 import ru.mtuci.is_c.ml.classification_manager.utils.MappingUtils;
 
-import java.util.Arrays;
-import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -26,7 +22,6 @@ import java.util.stream.Collectors;
 public class ConsumersResponseService {
     private final ModelsRepository modelsRepository;
     private final ProviderRepository providerRepository;
-    private final PreproccesingDataRepository preproccesingDataRepository;
     private final MappingUtils mappingUtils;
 
     @Transactional
@@ -89,7 +84,6 @@ public class ConsumersResponseService {
                 "; " + errorInfo.getErrorMessage() +
                 "; " + errorInfo.getLocalDateTime();
         modelImpl.setErrorMessage(errorMessageBuilder);
-
         modelsRepository.save(modelImpl);
     }
 }

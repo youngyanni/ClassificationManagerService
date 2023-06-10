@@ -17,7 +17,6 @@ import ru.mtuci.is_c.ml.classification_manager.model.ModelsDB;
 import ru.mtuci.is_c.ml.classification_manager.enums.EnumLabels;
 import ru.mtuci.is_c.ml.classification_manager.repositories.AlgorithmsRepository;
 import ru.mtuci.is_c.ml.classification_manager.repositories.ModelsRepository;
-import ru.mtuci.is_c.ml.classification_manager.repositories.PreproccesingDataRepository;
 import ru.mtuci.is_c.ml.classification_manager.repositories.ProviderRepository;
 import org.springframework.cloud.stream.function.StreamBridge;
 import ru.mtuci.is_c.ml.classification_manager.utils.CheckParamValues;
@@ -36,7 +35,6 @@ public class ClassificationManagerService {
     private final StreamBridge streamBridge;
     private final CheckParamValues checkParamValues;
     private final MappingUtils mappingUtils;
-    private final PreproccesingDataRepository preproccesingDataRepository;
 
     @Transactional
     public List<AvailableDataProccesingToolsEntityToDTOResponse> dataProcessingToolsInfo() {
@@ -55,12 +53,12 @@ public class ClassificationManagerService {
     }
 
     @Transactional
-    public String createModel(CreateModelRequest param){
+    public String createModel(CreateModelRequest param) {
         AlgorithmsDB checkAlg = algorithmsRepository.findByName(param.getNameAlg());
-        if (checkAlg==null){
+        if (checkAlg == null) {
             throw new DataProccessingToolsNotFound(param.getNameAlg());
         }
-        checkParamValues.checkValue(param.getNameAlg(),param.getHyperparams());
+        checkParamValues.checkValue(param.getNameAlg(), param.getHyperparams());
         var modelImpl = modelsRepository.findByName(param.getNameModel());
         if (modelImpl == null) {
             modelImpl = ModelsDB.builder()
@@ -75,17 +73,18 @@ public class ClassificationManagerService {
         modelsRepository.save(modelImpl);
         var topic = providerRepository.findTopic(algorithmsRepository.findIdByAlgName(param.getNameAlg()));
         streamBridge.send(topic, GeneralRequestResponse.builder()
-                        .model(GeneralObjectStructure.builder()
-                                .name(param.getNameAlg())
-                                .parameters(param.getHyperparams())
-                                .build())
+                .model(GeneralObjectStructure.builder()
+                        .name(param.getNameAlg())
+                        .parameters(param.getHyperparams())
+                        .build())
                 .modelId(modelImpl.getId().toString())
                 .modelLabel(EnumLabels.CREATE)
                 .build());
         return EnumLabels.SENT_FOR_CREATE.getDescription();
     }
+
     @Transactional
-    public String deleteModel(String modelName){
+    public String deleteModel(String modelName) {
         var model = modelsRepository.findByName(modelName);
         modelsRepository.deleteById(model.getId());
         return "Model " + modelName + " was deleted";
@@ -97,14 +96,14 @@ public class ClassificationManagerService {
         if (modelImpl == null) {
             throw new ModelNotFoundException(param.getModelName());
         }
-        modelImpl.setPreproccesingData(mappingUtils.PreproccesingDataToEntity(param,"TRAIN"));
+        modelImpl.setPreproccesingData(mappingUtils.PreproccesingDataToEntity(param, "TRAIN"));
         modelImpl.setStatus(EnumLabels.SENT_FOR_TRAIN);
         modelsRepository.save(modelImpl);
         var topic = providerRepository.findTopic(algorithmsRepository.findIdByAlgName(modelImpl.getAlgorithm()));
         streamBridge.send(topic, GeneralRequestResponse.builder()
-                        .model(GeneralObjectStructure.builder()
-                                .serializedData(modelImpl.getModel())
-                                .build())
+                .model(GeneralObjectStructure.builder()
+                        .serializedData(modelImpl.getModel())
+                        .build())
                 .modelId(modelImpl.getId().toString())
                 .features(param.getFeatures())
                 .featuresHeader(param.getFeaturesHeader())
@@ -123,12 +122,12 @@ public class ClassificationManagerService {
         if (modelImpl == null) {
             throw new ModelNotFoundException(param.getModelName());
         }
-        modelImpl.setPreproccesingData(mappingUtils.PreproccesingDataToEntity(param,"PREDICT"));
+        modelImpl.setPreproccesingData(mappingUtils.PreproccesingDataToEntity(param, "PREDICT"));
         var topic = providerRepository.findTopic(algorithmsRepository.findIdByAlgName(modelImpl.getAlgorithm()));
         streamBridge.send(topic, GeneralRequestResponse.builder()
-                        .model(GeneralObjectStructure.builder()
-                                .serializedData(modelImpl.getModel())
-                                .build())
+                .model(GeneralObjectStructure.builder()
+                        .serializedData(modelImpl.getModel())
+                        .build())
                 .modelId(modelImpl.getId().toString())
                 .scalers(param.getScalers())
                 .encodersFeatures(param.getEncoderFeatures())

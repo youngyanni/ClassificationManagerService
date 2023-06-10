@@ -6,7 +6,6 @@ import lombok.NoArgsConstructor;
 import ru.mtuci.is_c.ml.classification_manager.dto.encoders.Feature;
 import ru.mtuci.is_c.ml.classification_manager.dto.encoders.FeatureEncoderStructure;
 import ru.mtuci.is_c.ml.classification_manager.dto.providers.GeneralObjectStructure;
-import ru.mtuci.is_c.ml.classification_manager.dto.providers.GeneralRequestResponse;
 
 
 import java.util.List;
