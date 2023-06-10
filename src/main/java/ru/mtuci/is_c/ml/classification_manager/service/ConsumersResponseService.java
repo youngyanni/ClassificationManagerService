@@ -56,11 +56,8 @@ public class ConsumersResponseService {
 
     @Transactional
     public void saveTrainedModel(GeneralRequestResponse modelParameters) {
-        System.out.println("Был здесь");
         var modelImpl = modelsRepository.findById(UUID.fromString(modelParameters.getModelId())).orElseThrow();
-        System.out.println(modelImpl.getPreproccesingData().size());
         modelImpl.setPreproccesingData(mappingUtils.savePreproccesingData(modelParameters, modelImpl.getPreproccesingData()));
-        System.out.println("Конец");
         modelImpl.setModel(modelParameters.getModel().getSerializedData());
         modelImpl.setStatus(EnumLabels.TRAINED);
         modelImpl.setErrorMessage(null);

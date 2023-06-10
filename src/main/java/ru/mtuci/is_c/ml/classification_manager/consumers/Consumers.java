@@ -24,7 +24,6 @@ public class Consumers {
     @Bean
     public Consumer<GeneralRequestResponse> saveModel() {
         return model -> {
-            System.out.println(model);
             switch (model.getModelLabel()) {
                 case CREATE -> consumersResponse.saveCreatedModel(model);
                 case TRAIN -> consumersResponse.saveTrainedModel(model);
