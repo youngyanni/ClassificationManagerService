@@ -2,24 +2,25 @@ package ru.mtuci.is_c.ml.classification_manager.service;
 
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import ru.mtuci.is_c.ml.classification_manager.dto.providers.GeneralObjectStructure;
+import ru.mtuci.is_c.ml.classification_manager.dto.requests.TrainPredictRequest;
+import ru.mtuci.is_c.ml.classification_manager.exception.DataProccessingToolsNotFound;
 import ru.mtuci.is_c.ml.classification_manager.exception.DuplicateNameError;
 import ru.mtuci.is_c.ml.classification_manager.exception.ModelNotFoundException;
 import ru.mtuci.is_c.ml.classification_manager.dto.providers.GeneralRequestResponse;
-import ru.mtuci.is_c.ml.classification_manager.dto.providers.SerializedCreatedModel;
 import ru.mtuci.is_c.ml.classification_manager.dto.requests.CreateModelRequest;
-import ru.mtuci.is_c.ml.classification_manager.dto.requests.PredictionRequest;
-import ru.mtuci.is_c.ml.classification_manager.dto.requests.TrainRequest;
-import ru.mtuci.is_c.ml.classification_manager.dto.responses.AvailableAlgorithmsResponse;
+import ru.mtuci.is_c.ml.classification_manager.dto.responses.AvailableDataProccesingToolsEntityToDTOResponse;
 import ru.mtuci.is_c.ml.classification_manager.dto.responses.CreatedModelResponse;
-import ru.mtuci.is_c.ml.classification_manager.dto.responses.PredictionResponse;
+import ru.mtuci.is_c.ml.classification_manager.model.AlgorithmsDB;
 import ru.mtuci.is_c.ml.classification_manager.model.ModelsDB;
 import ru.mtuci.is_c.ml.classification_manager.enums.EnumLabels;
 import ru.mtuci.is_c.ml.classification_manager.repositories.AlgorithmsRepository;
 import ru.mtuci.is_c.ml.classification_manager.repositories.ModelsRepository;
+import ru.mtuci.is_c.ml.classification_manager.repositories.PreproccesingDataRepository;
 import ru.mtuci.is_c.ml.classification_manager.repositories.ProviderRepository;
 import org.springframework.cloud.stream.function.StreamBridge;
+import ru.mtuci.is_c.ml.classification_manager.utils.CheckParamValues;
 import ru.mtuci.is_c.ml.classification_manager.utils.MappingUtils;
 
 
@@ -27,19 +28,21 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
-@Slf4j
 @RequiredArgsConstructor
 public class ClassificationManagerService {
     private final ModelsRepository modelsRepository;
     private final ProviderRepository providerRepository;
     private final AlgorithmsRepository algorithmsRepository;
     private final StreamBridge streamBridge;
+    private final CheckParamValues checkParamValues;
+    private final MappingUtils mappingUtils;
+    private final PreproccesingDataRepository preproccesingDataRepository;
 
     @Transactional
-    public List<AvailableAlgorithmsResponse> availableAlgorithms() {
+    public List<AvailableDataProccesingToolsEntityToDTOResponse> dataProcessingToolsInfo() {
         return providerRepository.findAll()
                 .stream()
-                .map(MappingUtils::AlgorithmsEntityToDTO)
+                .map(MappingUtils::DataProccesingToolsEntityToDTO)
                 .collect(Collectors.toList());
     }
 
@@ -52,14 +55,19 @@ public class ClassificationManagerService {
     }
 
     @Transactional
-    public String createModel(CreateModelRequest param) {
+    public String createModel(CreateModelRequest param){
+        AlgorithmsDB checkAlg = algorithmsRepository.findByName(param.getNameAlg());
+        if (checkAlg==null){
+            throw new DataProccessingToolsNotFound(param.getNameAlg());
+        }
+        checkParamValues.checkValue(param.getNameAlg(),param.getHyperparams());
         var modelImpl = modelsRepository.findByName(param.getNameModel());
         if (modelImpl == null) {
             modelImpl = ModelsDB.builder()
                     .name(param.getNameModel())
                     .status(EnumLabels.SENT_FOR_CREATE)
                     .algorithm(param.getNameAlg())
-                    .hyperparams(String.valueOf(param.getHyperParam().stream().map(params -> params.getName() + ": " + params.getValue()).collect(Collectors.toList())))
+                    .hyperparams(String.valueOf(param.getHyperparams().stream().map(params -> params.getName() + ": " + params.getValue()).collect(Collectors.toList())))
                     .build();
         } else {
             throw new DuplicateNameError(param.getNameModel());
@@ -67,37 +75,42 @@ public class ClassificationManagerService {
         modelsRepository.save(modelImpl);
         var topic = providerRepository.findTopic(algorithmsRepository.findIdByAlgName(param.getNameAlg()));
         streamBridge.send(topic, GeneralRequestResponse.builder()
-                .classifier(param.getNameAlg())
-                .options(param.getHyperParam())
+                        .model(GeneralObjectStructure.builder()
+                                .name(param.getNameAlg())
+                                .parameters(param.getHyperparams())
+                                .build())
                 .modelId(modelImpl.getId().toString())
                 .modelLabel(EnumLabels.CREATE)
                 .build());
-        return param.getNameModel();
+        return EnumLabels.SENT_FOR_CREATE.getDescription();
     }
-
     @Transactional
-    public String deleteModel(String modelName) {
-        System.out.println(modelName);
+    public String deleteModel(String modelName){
         var model = modelsRepository.findByName(modelName);
         modelsRepository.deleteById(model.getId());
-        return "Модель удалена";
+        return "Model " + modelName + " was deleted";
     }
 
     @Transactional
-    public String trainModel(TrainRequest param) {
-        var modelImpl = modelsRepository.findByName(param.getNameModel());
+    public String trainModel(TrainPredictRequest param) {
+        var modelImpl = modelsRepository.findByName(param.getModelName());
         if (modelImpl == null) {
-            throw new ModelNotFoundException(param.getNameModel());
+            throw new ModelNotFoundException(param.getModelName());
         }
+        modelImpl.setPreproccesingData(mappingUtils.PreproccesingDataToEntity(param,"TRAIN"));
         modelImpl.setStatus(EnumLabels.SENT_FOR_TRAIN);
         modelsRepository.save(modelImpl);
         var topic = providerRepository.findTopic(algorithmsRepository.findIdByAlgName(modelImpl.getAlgorithm()));
         streamBridge.send(topic, GeneralRequestResponse.builder()
-                .serializedModelData(SerializedCreatedModel.builder()
-                        .model(modelImpl.getModel())
-                        .build())
+                        .model(GeneralObjectStructure.builder()
+                                .serializedData(modelImpl.getModel())
+                                .build())
                 .modelId(modelImpl.getId().toString())
                 .features(param.getFeatures())
+                .featuresHeader(param.getFeaturesHeader())
+                .scalers(param.getScalers())
+                .encoderLabels(param.getEncoderLabels())
+                .encodersFeatures(param.getEncoderFeatures())
                 .labels(param.getLabels())
                 .modelLabel(EnumLabels.TRAIN)
                 .build());
@@ -105,25 +118,24 @@ public class ClassificationManagerService {
     }
 
     @Transactional
-    public PredictionResponse predictModel(PredictionRequest param) {
-        var modelImpl = modelsRepository.findByName(param.getNameModel());
+    public String predictModel(TrainPredictRequest param) {
+        var modelImpl = modelsRepository.findByName(param.getModelName());
         if (modelImpl == null) {
-            throw new ModelNotFoundException(param.getNameModel());
+            throw new ModelNotFoundException(param.getModelName());
         }
+        modelImpl.setPreproccesingData(mappingUtils.PreproccesingDataToEntity(param,"PREDICT"));
         var topic = providerRepository.findTopic(algorithmsRepository.findIdByAlgName(modelImpl.getAlgorithm()));
         streamBridge.send(topic, GeneralRequestResponse.builder()
-                .serializedModelData(SerializedCreatedModel.builder()
-                        .model(modelImpl.getModel())
-                        .attribute(modelImpl.getAttribute())
-                        .build())
+                        .model(GeneralObjectStructure.builder()
+                                .serializedData(modelImpl.getModel())
+                                .build())
                 .modelId(modelImpl.getId().toString())
+                .scalers(param.getScalers())
+                .encodersFeatures(param.getEncoderFeatures())
+                .encoderLabels(param.getEncoderLabels())
                 .features(param.getFeatures())
                 .modelLabel(EnumLabels.PREDICT)
                 .build());
-        modelImpl = modelsRepository.findByName(param.getNameModel());
-        return PredictionResponse.builder()
-                .nameModel(param.getNameModel())
-                .predict(modelImpl.getPredict())
-                .build();
+        return EnumLabels.SENT_FOR_PREDICT.getDescription();
     }
 }

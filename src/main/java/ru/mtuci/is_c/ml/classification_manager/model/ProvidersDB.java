@@ -26,7 +26,7 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
-public class ProviderDB {
+public class ProvidersDB {
     @Id
     @Column(name = "id")
     @GeneratedValue()
@@ -39,5 +39,12 @@ public class ProviderDB {
     @JoinColumn(name = "providerdb_id")
     @JsonManagedReference
     private List<AlgorithmsDB> alg = new ArrayList<AlgorithmsDB>();
-
+    @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+    @JoinColumn(name = "providerdb_id")
+    @JsonManagedReference
+    private List<EncodersDB> endcoder = new ArrayList<EncodersDB>();
+    @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+    @JoinColumn(name = "providerdb_id")
+    @JsonManagedReference
+    private List<ScalersDB> scaler = new ArrayList<ScalersDB>();
 }

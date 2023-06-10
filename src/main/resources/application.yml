@@ -3,6 +3,11 @@ server:
   error:
     include-stacktrace: never
     include-message: always
+logging:
+  level:
+    org.hibernate.sql: DEBUG
+    org.hibernate.type.descriptor.sql.BasicBinder: TRACE
+    org.postgresql: DEBUG
 spring:
   application:
     name: classification-service
@@ -14,6 +19,7 @@ spring:
   jpa:
     hibernate:
       ddl-auto: update
+
   cloud:
     stream:
       function:
@@ -25,9 +31,9 @@ spring:
         saveModel-in-0:
           destination: manager_in
           binder: local_rabbit
-        registrationRequest-in-0:
-          destination: manager_in
-          binder: local_rabbit
+      #  registrationRequest-in-0:
+        #  destination: manager_in
+         # binder: local_rabbit
       binders:
         local_rabbit:
           type: rabbit
@@ -39,3 +45,4 @@ spring:
                 username: yan
                 password: password1
                 virtual-host: /
+

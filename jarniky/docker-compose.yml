@@ -63,11 +63,18 @@ services:
   python-service:
     container_name: python
     build:
-      context: C:\Users\yan\Desktop\nn_microservice-master
+      context: C:\Users\yan\Desktop\sklearn-classification-algorithms-provider-service
       dockerfile: Dockerfile
     networks:
       - connector
     restart: always
+  data-split-service:
+    container_name: data-split
+    build:
+      context: C:\Users\yan\PycharmProjects\DataDivisionService
+      dockerfile: Dockerfile
+    networks:
+      - connector
 networks:
   connector:
     driver: bridge

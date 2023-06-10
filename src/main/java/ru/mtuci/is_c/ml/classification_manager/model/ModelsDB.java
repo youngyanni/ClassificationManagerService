@@ -1,13 +1,18 @@
 package ru.mtuci.is_c.ml.classification_manager.model;
 
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -16,6 +21,8 @@ import lombok.NoArgsConstructor;
 import ru.mtuci.is_c.ml.classification_manager.enums.EnumLabels;
 
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 
@@ -39,14 +46,17 @@ public class ModelsDB {
     @Column(name = "status")
     @Enumerated(EnumType.STRING)
     private EnumLabels status;
-    @Column(name = "predict")
-    private String predict;
     @Column(name = "algorithm")
     private String algorithm;
+    @Column(name ="predict_label")
+    private String predictLabel;
+    @Column(name = "distributions")
+    private String distributions;
     @Column(name = "error_message")
     private String errorMessage;
-    @Column(name = "attribute", length = 1000)
-    private String attribute;
     @Column(name = "hyperparams")
     private String hyperparams;
+    @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+    @JoinColumn(name = "modelsdb_id")
+    private List<PreproccesingDataDB> preproccesingData = new ArrayList<PreproccesingDataDB>();
 }

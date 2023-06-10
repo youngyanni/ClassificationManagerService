@@ -7,16 +7,12 @@ import lombok.Data;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-import java.util.List;
-import java.util.Map;
-
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Getter
 @Builder
-public class SerializedCreatedModel {
-    private byte[] model;
-    private List<Double> labels;
-    private List<Map<String, Double>> distributions;
+public class Parameters {
+    private String name;
+    private Object value;
 }

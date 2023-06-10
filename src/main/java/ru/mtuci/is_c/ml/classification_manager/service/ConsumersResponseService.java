@@ -2,17 +2,21 @@ package ru.mtuci.is_c.ml.classification_manager.service;
 
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import ru.mtuci.is_c.ml.classification_manager.dto.providers.ErrorMessage;
 import ru.mtuci.is_c.ml.classification_manager.dto.providers.GeneralRequestResponse;
-import ru.mtuci.is_c.ml.classification_manager.dto.requests.ProviderRegistrationRequest;
+import ru.mtuci.is_c.ml.classification_manager.dto.providers.ProviderRegistrationRequest;
 import ru.mtuci.is_c.ml.classification_manager.enums.EnumLabels;
-import ru.mtuci.is_c.ml.classification_manager.model.ProviderDB;
+import ru.mtuci.is_c.ml.classification_manager.model.PreproccesingDataDB;
+import ru.mtuci.is_c.ml.classification_manager.model.ProvidersDB;
 import ru.mtuci.is_c.ml.classification_manager.repositories.ModelsRepository;
+import ru.mtuci.is_c.ml.classification_manager.repositories.PreproccesingDataRepository;
 import ru.mtuci.is_c.ml.classification_manager.repositories.ProviderRepository;
 import ru.mtuci.is_c.ml.classification_manager.utils.MappingUtils;
 
 import java.util.Arrays;
+import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -22,45 +26,59 @@ import java.util.stream.Collectors;
 public class ConsumersResponseService {
     private final ModelsRepository modelsRepository;
     private final ProviderRepository providerRepository;
+    private final PreproccesingDataRepository preproccesingDataRepository;
+    private final MappingUtils mappingUtils;
 
     @Transactional
     public void providerRegistration(ProviderRegistrationRequest modelParameters) {
-        providerRepository.save(ProviderDB.builder()
+        providerRepository.save(ProvidersDB.builder()
                 .providerName(modelParameters.getProvider())
                 .topic(modelParameters.getTopic())
                 .alg(modelParameters.getAlgorithms()
                         .stream()
                         .map(MappingUtils::mapAlgorithmsToEntity)
                         .collect(Collectors.toList()))
+                .endcoder(modelParameters.getEncoders()
+                        .stream()
+                        .map(MappingUtils::mapEncodersToEntity)
+                        .collect(Collectors.toList()))
+                .scaler(modelParameters.getScalers()
+                        .stream()
+                        .map(MappingUtils::mapScalersToEntity)
+                        .collect(Collectors.toList()))
                 .build());
+
     }
 
     @Transactional
     public void saveCreatedModel(GeneralRequestResponse modelParameters) {
         var modelImpl = modelsRepository.findById(UUID.fromString(modelParameters.getModelId())).orElseThrow();
-        modelImpl.setModel(modelParameters.getSerializedModelData().getModel());
+        modelImpl.setModel(modelParameters.getModel().getSerializedData());
         modelImpl.setStatus(EnumLabels.CREATED);
-        modelImpl.setErrorMessage("");
+        modelImpl.setErrorMessage(null);
         modelsRepository.save(modelImpl);
     }
 
     @Transactional
     public void saveTrainedModel(GeneralRequestResponse modelParameters) {
+        System.out.println("Был здесь");
         var modelImpl = modelsRepository.findById(UUID.fromString(modelParameters.getModelId())).orElseThrow();
-        modelImpl.setAttribute(modelParameters.getSerializedModelData().getAttribute());
-        modelImpl.setModel(modelParameters.getSerializedModelData().getModel());
-        modelImpl.setMetrics(Arrays.toString(modelParameters.getMetrics()));
+        System.out.println(modelImpl.getPreproccesingData().size());
+        modelImpl.setPreproccesingData(mappingUtils.savePreproccesingData(modelParameters, modelImpl.getPreproccesingData()));
+        System.out.println("Конец");
+        modelImpl.setModel(modelParameters.getModel().getSerializedData());
         modelImpl.setStatus(EnumLabels.TRAINED);
-        modelImpl.setErrorMessage("");
-        modelsRepository.saveAndFlush(modelImpl);
+        modelImpl.setErrorMessage(null);
+        modelsRepository.save(modelImpl);
     }
 
     @Transactional
     public void savePredictedModel(GeneralRequestResponse modelParameters) {
         final var modelImpl = modelsRepository.findById(UUID.fromString(modelParameters.getModelId())).orElseThrow();
         modelImpl.setStatus(EnumLabels.PREDICTED);
-        modelImpl.setErrorMessage("");
-        modelImpl.setPredict(String.valueOf(modelParameters.getSerializedModelData().getLabels()) + modelParameters.getSerializedModelData().getDistributions());
+        modelImpl.setErrorMessage(null);
+        modelImpl.setPredictLabel(modelParameters.getLabels().toString());
+        modelImpl.setDistributions(modelImpl.getDistributions());
         modelsRepository.save(modelImpl);
     }
 

@@ -2,7 +2,6 @@ package ru.mtuci.is_c.ml.classification_manager.model;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
-
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -18,35 +17,30 @@ import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
-import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
-
 
 import java.util.ArrayList;
 import java.util.List;
 
-
 @Entity
-@Table(name = "algorithms_table")
+@Table(name = "encoders_table")
 @Builder
-@Setter
-@Getter
+@Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class AlgorithmsDB {
+public class EncodersDB {
     @Id
-    @Column(name = "alg_id")
+    @Column(name = "encoder_id")
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    @Column(name = "name")
-    private String name;
+    @Column(name = "encoder_name")
+    private String encoderName;
     @ManyToOne
     @MapsId("providerdb_id")
     @JsonBackReference
     private ProvidersDB providerDB;
     @OneToMany(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
-    @JoinColumn(name = "algorithmsdb_alg_id")
+    @JoinColumn(name = "encodersdb_encoder_id")
     @JsonManagedReference
     private List<HyperparametersDB> hyperparametersDBList = new ArrayList<HyperparametersDB>();
 }

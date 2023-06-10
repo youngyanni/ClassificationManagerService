@@ -12,7 +12,8 @@ public enum EnumLabels {
     SENT_FOR_PREDICT("Отправлена на предсказание"),
     CREATED("Создана"),
     TRAINED("Обучена"),
-    PREDICTED("Предсказала");
+    PREDICTED("Предсказала"),
+    TRAIN_WITH_CROSSVALIDATION("");
     private final String description;
 
     public String getDescription() {
